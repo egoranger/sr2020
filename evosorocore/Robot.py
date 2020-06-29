@@ -13,7 +13,7 @@ class Robot(object):
         if morphology is not None:
             self.morphology = morphology
         else:
-            self.morphology = np.ones(shape=(2, 2, 5))
+            self.morphology = np.ones(shape=(2, 2, 5), dtype=np.int8)
             self.mutate()
 
     def get_body_xlim(self):
@@ -44,9 +44,9 @@ class Robot(object):
         etree.SubElement(structure, "X_Voxels").text = str(self.morphology.shape[0])
         etree.SubElement(structure, "Y_Voxels").text = str(self.morphology.shape[1])
         etree.SubElement(structure, "Z_Voxels").text = str(self.morphology.shape[2])
-        etree.SubElement(structure, "numRegenerationModelSynapses").text = "0"
-        etree.SubElement(structure, "numForwardModelSynapses").text = "0"
-        etree.SubElement(structure, "numControllerSynapses").text = "0"
+        #etree.SubElement(structure, "numRegenerationModelSynapses").text = "0"
+        #etree.SubElement(structure, "numForwardModelSynapses").text = "0"
+        #etree.SubElement(structure, "numControllerSynapses").text = "0"
 
         data = etree.SubElement(structure, "Data")
         for layer in range(self.morphology.shape[2]):
