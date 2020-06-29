@@ -346,29 +346,31 @@ class VXC_Wrapper(object):
     def __init__(self, lattice_dimension=0.01):
         self.lattice_dimension = lattice_dimension
 
-    def write_to_xml(self, root, material_pallette, robot, **kwargs):
-        VXC_root = etree.SubElement(root, "VXC", Version="0.93")
+    def write_to_xml(self, root, material_pallette, robot=None, **kwargs):
+        VXC_root = etree.SubElement(root, "VXC", Version="0.94")
 
         lattice = etree.SubElement(VXC_root, "Lattice")
         etree.SubElement(lattice, "Lattice_Dim").text = str(self.lattice_dimension)
-        etree.SubElement(lattice, "X_Dim_Adj").text = "1"
-        etree.SubElement(lattice, "Y_Dim_Adj").text = "1"
-        etree.SubElement(lattice, "Z_Dim_Adj").text = "1"
-        etree.SubElement(lattice, "X_Line_Offset").text = "0"
-        etree.SubElement(lattice, "Y_Line_Offset").text = "0"
-        etree.SubElement(lattice, "X_Layer_Offset").text = "0"
-        etree.SubElement(lattice, "Y_Layer_Offset").text = "0"
+        #etree.SubElement(lattice, "X_Dim_Adj").text = "1"
+        #etree.SubElement(lattice, "Y_Dim_Adj").text = "1"
+        #etree.SubElement(lattice, "Z_Dim_Adj").text = "1"
+        #etree.SubElement(lattice, "X_Line_Offset").text = "0"
+        #etree.SubElement(lattice, "Y_Line_Offset").text = "0"
+        #etree.SubElement(lattice, "X_Layer_Offset").text = "0"
+        #etree.SubElement(lattice, "Y_Layer_Offset").text = "0"
 
-        voxel = etree.SubElement(VXC_root, "Voxel")
-        etree.SubElement(voxel, "Vox_Name").text = "BOX"
-        etree.SubElement(voxel, "X_Squeeze").text = "1"
-        etree.SubElement(voxel, "Y_Squeeze").text = "1"
-        etree.SubElement(voxel, "Z_Squeeze").text = "1"
+        #voxel = etree.SubElement(VXC_root, "Voxel")
+        #etree.SubElement(voxel, "Vox_Name").text = "BOX"
+        #etree.SubElement(voxel, "X_Squeeze").text = "1"
+        #etree.SubElement(voxel, "Y_Squeeze").text = "1"
+        #etree.SubElement(voxel, "Z_Squeeze").text = "1"
 
-        palette = etree.SubElement(VXC_root, "Palette")
-        for material in material_pallette:
-            material.write_to_xml(palette)
+        if material_pallette != []:
+            palette = etree.SubElement(VXC_root, "Palette")
+            for material in material_pallette:
+                material.write_to_xml(palette)
 
-        robot.write_to_xml(VXC_root)
+        if robot:
+            robot.write_to_xml(VXC_root)
 
         return VXC_root
