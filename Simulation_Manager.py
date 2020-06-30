@@ -33,12 +33,24 @@ class SimulationManager( object ):
   def run_simulator( self ):
     #TODO check if voxcraft-sim and worker exist in current folder
     #TODO check exceptions
-    sub.call( "./voxcraft-sim -i {0} -o test.xml".format( folder ), shell=True ) #shell=True shouldn't be normally used 
-    #TODO parse data
+    print("running simulation")
+    sub.call( "./voxcraft-sim -i {0} -o test.xml -f".format( self.folder ), shell=True ) #shell=True shouldn't be normally used 
+    root = etree.parse( "test.xml" ).getroot()
+    fitness = float(root.findall("detail/bot/")[0].text)
+    return fitness #TODO change!!
 
   #TODO fitness to pass to mapelites
-  def fitness( self ):
-    pass
+  #needs to accept data from mapelites as well as to return fitness and descriptor
+  def fitness( self, x ):
+   
+    print("Printing...")
+    print( x )
+ 
+    self.convert_materials( [x] )
+    self.create_base_vxa()
+    fit = self.run_simulator()
+    
+    return fit, "3.14"
 
   #write to file
   #parse materials into Material format
