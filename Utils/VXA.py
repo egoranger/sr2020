@@ -5,7 +5,6 @@ from evosorocore.Material import Material as Mat
 from evosorocore.Simulator import Sim
 from evosorocore.Environment import Env,VXC_Wrapper
 from lxml import etree
-import os
 
 class VXA( object ):
   """
@@ -31,7 +30,7 @@ class VXA( object ):
     self.vxc.write_to_xml( self.root, materials )
 
     with open( path, "w" ) as f:
-      f.write( etree.tostring( self.root, pretty_print=True ).decode( "utf-8" ) )
+      f.write( etree.tostring( self.root, pretty_print=True ).decode( "utf-8" ) ) #TODO is pretty and decoding necessary?
 
   def create_header( self ):
     self.root = etree.Element( "VXA", Version="1.1" )
