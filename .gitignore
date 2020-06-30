@@ -2,3 +2,5 @@ __pycache__
 evosorocore
 *.vxa
 *.vxd
+voxcraft-sim
+vx3_node_worker

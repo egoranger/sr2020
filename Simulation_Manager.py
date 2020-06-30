@@ -3,16 +3,20 @@
 from Utils.VXA import VXA
 from Utils.VXD import VXD
 from evosorocore.Material import Material
+from lxml import etree
 import numpy as np
+import subprocess as sub
+
 
 class SimulationManager( object ):
 
-  def __init__( self, material_cnt, folder ):
+  def __init__( self, material_cnt, folder, verbose=False ):
     self.material_cnt = material_cnt
-    self.materials = [None] * self.material_cnt #TODO this has to be vxa materials
-    self.folder = folder
+    self.materials = [] #materials need to be created during simulation process 
+    self.folder = folder #folder where .vxa/.vxd files are stored
     self.vxa = VXA()
     self.vxd = VXD()
+    self.verbose = verbose
 
   #expect list with np arrays in following format: elastic_mod, friction_static, friction_dynamic, density, CTE (we'll start small)
   def convert_materials( self, mat_list ):
@@ -27,7 +31,10 @@ class SimulationManager( object ):
 
   #TODO run voxcraft-sim
   def run_simulator( self ):
-    pass
+    #TODO check if voxcraft-sim and worker exist in current folder
+    #TODO check exceptions
+    sub.call( "./voxcraft-sim -i {0} -o test.xml".format( folder ), shell=True ) #shell=True shouldn't be normally used 
+    #TODO parse data
 
   #TODO fitness to pass to mapelites
   def fitness( self ):
