@@ -23,6 +23,11 @@ class SimulationManager( object ):
   #expect list with np arrays in following format:
   #elastic_mod, friction_static, friction_dynamic, density, CTE (we'll start small)
   def create_materials( self, mat_list ):
+    """
+    @input: list of numpy arrays
+    Create material list using evosorocore Material.
+    This format is used by VXA class.
+    """
     assert self.material_cnt == len( mat_list ), "Number of materials differs from the number of materials expected"
     self.materials = []
 
@@ -30,6 +35,12 @@ class SimulationManager( object ):
       self.materials.append( Material( i, str( i ), m[0], m[1], m[2], m[3], m[4] ) )
 
   def convert_materials( self, mat_arr ):
+    """
+    @input: mat_arr (np.array)
+    @output: list of numpy arrays
+    Convert numpy array received by fitness function to more material properties.
+    Each array needs to be fixed by some constant. This is defined by self.mult_arr.
+    """
     c = self.par_cnt
     assert len( mat_arr.shape ) == 1, "Wrong shape of an array with materials"
     assert mat_arr.shape[0] % c == 0, "Wrong number of parameters, cannot construct list of materials"
@@ -39,13 +50,16 @@ class SimulationManager( object ):
   def create_base_vxa( self ):
     self.vxa.write_to_xml( self.folder + "/base.vxa", self.materials )
 
-  #TODO run voxcraft-sim
   def run_simulator( self ):
+    """
+    @output: data from simulation
+    Run voxcraft simulation and get data out of it.  
+    """
     #TODO check if voxcraft-sim and worker exist in current folder
     #TODO check exceptions
     if self.verbose:
       print("running simulation")
-    #TODO get rid of output?
+    #TODO get rid of the output?
     sub.call( "./voxcraft-sim -i {0} -o test.xml -f".format( self.folder ), shell=True ) #shell=True shouldn't be normally used 
     root = etree.parse( "test.xml" ).getroot()
     fitness = float(root.findall("detail/bot/")[0].text)
@@ -54,12 +68,16 @@ class SimulationManager( object ):
   #TODO fitness to pass to mapelites
   #needs to accept data from mapelites as well as to return fitness and descriptor
   def fitness( self, materials ):
+    """
+    @input: numpy array with materials
+    @output: fitness (float), np.array (descriptor)
+    """
    
     self.create_materials( self.convert_materials( materials ) )
     self.create_base_vxa()
     fit = self.run_simulator()
     
-    return fit, np.array( [3.14] )
+    return fit, np.array( [3,14] ) #TODO need to return descriptor
 
 #TODO do some testing
 if __name__ == "__main__":
