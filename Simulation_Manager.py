@@ -53,16 +53,13 @@ class SimulationManager( object ):
 
   #TODO fitness to pass to mapelites
   #needs to accept data from mapelites as well as to return fitness and descriptor
-  def fitness( self, x ):
+  def fitness( self, materials ):
    
-    self.create_materials( [x] )
+    self.create_materials( self.convert_materials( materials ) )
     self.create_base_vxa()
     fit = self.run_simulator()
     
     return fit, np.array( [3.14] )
-
-  #write to file
-  #parse materials into Material format
 
 #TODO do some testing
 if __name__ == "__main__":
