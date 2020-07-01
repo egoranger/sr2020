@@ -6,6 +6,7 @@ from evosorocore.Material import Material
 from lxml import etree
 import numpy as np
 import subprocess as sub
+import os
 
 
 class SimulationManager( object ):
@@ -18,14 +19,13 @@ class SimulationManager( object ):
     self.vxd = VXD()
     self.verbose = verbose
     self.par_cnt = 5 #number of parameters for materials
-    self.mult_arr = np.array( [ 10e7, 5, 1, 1.5e3, 1e-2 ] ) #multiplicative constants for mat properties
+    self.mult_arr = np.array( [ 10e7, 5, 1, 1.5e3, 1e-4 ] ) #multiplicative constants for mat properties
 
-  #expect list with np arrays in following format:
-  #elastic_mod, friction_static, friction_dynamic, density, CTE (we'll start small)
   def create_materials( self, mat_list ):
     """
     @input: list of numpy arrays
     Create material list using evosorocore Material.
+    Expected material properties are following: elastic_mod, uStatic, uDynamic, density, CTE.
     This format is used by VXA class.
     """
     assert self.material_cnt == len( mat_list ), "Number of materials differs from the number of materials expected"
@@ -55,12 +55,27 @@ class SimulationManager( object ):
     @output: data from simulation
     Run voxcraft simulation and get data out of it.  
     """
-    #TODO check if voxcraft-sim and worker exist in current folder
-    #TODO check exceptions
+
+    assert os.path.exists("./voxcraft-sim") and os.path.exists("./vx3_node_worker"), "voxcraft-sim or vx3_node_worker do not exist in the current folder"
+
     if self.verbose:
       print("running simulation")
-    #TODO get rid of the output?
-    sub.call( "./voxcraft-sim -i {0} -o test.xml -f".format( self.folder ), shell=True ) #shell=True shouldn't be normally used 
+    #TODO get rid of the output? /give an option to control the output?
+
+    while True: #taken from voxcraft-evo
+      try:
+        #TODO for vx3_node_worker when file exists (too quick simulation runs)
+        sub.call( "./voxcraft-sim -i {0} -o test.xml -f".format( self.folder ), shell=True ) #shell=True shouldn't be normally used
+        break
+      except IOError:
+        if self.verbose:
+          print("IOError, resimulating.")
+        pass
+      except IndexError:
+        if self.verbose:
+          print("InderError, resimulating.")
+        pass
+
     root = etree.parse( "test.xml" ).getroot()
     fitness = float(root.findall("detail/bot/")[0].text)
     return fitness #TODO change!!
@@ -81,7 +96,9 @@ class SimulationManager( object ):
 
 #TODO do some testing
 if __name__ == "__main__":
-  mgr = SimulationManager( 2, "." )
-  mats = mgr.convert_materials( np.array( [1,1,1,1,1,1,1,1,1,1] ) )
+  mgr = SimulationManager( 2, "./demo" )
+  mats = mgr.convert_materials( np.array( [0.01,1,1,1,1,0.01,1,1,1,1] ) )
   mgr.create_materials( mats )
-  #mgr.create_base_vxa()
+  mgr.create_base_vxa()
+  while True:
+    mgr.run_simulator()
