@@ -40,7 +40,10 @@ class Robot(object):
             self.morphology[x, y, z] = 1
 
     def write_to_xml(self, root, **kwargs):
-        structure = etree.SubElement(root, "Structure", Compression="ASCII_READABLE")
+        structure = etree.SubElement(root, "Structure")
+        structure.set('replace', 'VXA.VXC.Structure')
+        structure.set('Compression', 'ASCII_READABLE')
+
         etree.SubElement(structure, "X_Voxels").text = str(self.morphology.shape[0])
         etree.SubElement(structure, "Y_Voxels").text = str(self.morphology.shape[1])
         etree.SubElement(structure, "Z_Voxels").text = str(self.morphology.shape[2])

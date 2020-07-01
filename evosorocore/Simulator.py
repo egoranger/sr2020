@@ -7,7 +7,8 @@ class Sim(object):
     def __init__(self, self_collisions_enabled=True, simulation_time=10.5, dt_frac=0.9, stop_condition=2,
                  fitness_eval_init_time=0.5, actuation_start_time=0, equilibrium_mode=0, min_temp_fact=0.1,
                  max_temp_fact_change=0.00001, max_stiffness_change=10000, min_elastic_mod=5e006,
-                 max_elastic_mod=5e008, damp_evolved_stiffness=True):
+                 max_elastic_mod=5e008, damp_evolved_stiffness=True, record_history=0,
+                 record_link=False):
         self.sub_groups = ["Integration", "Damping", "Collisions", "Features", "StopCondition", "EquilibriumMode", "GA"]
         # custom nested things in "SurfMesh", "CMesh"
 
@@ -24,6 +25,8 @@ class Sim(object):
         self.min_elastic_mod = min_elastic_mod
         self.max_elastic_mod = max_elastic_mod
         self.damp_evolved_stiffness = damp_evolved_stiffness
+        self.record_history = record_history
+        self.record_link = record_link
 
     def write_to_xml(self, root, run_dir=None, individual=None, fitness_file_str=None, seed=0, **kwargs):
         sim_root = etree.SubElement(root, "Simulator")
@@ -55,6 +58,11 @@ class Sim(object):
         #etree.SubElement(c_mesh, "Vertices")
         #etree.SubElement(c_mesh, "Facets")
         #etree.SubElement(c_mesh, "Lines")
+
+        record_history = etree.SubElement(sim_root, "RecordHistory")
+        etree.SubElement(record_history, "RecordStepSize").text = str(int(self.record_history))
+        etree.SubElement(record_history, "RecordVoxel").text = "1" if self.record_history else "0"
+        etree.SubElement(record_history, "RecordLink").text = "1" if self.record_link else "0"
 
         stop_condition = etree.SubElement(sim_root, "StopCondition")
         stop_condition_formula = etree.SubElement(stop_condition, "StopConditionFormula")

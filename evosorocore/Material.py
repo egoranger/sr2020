@@ -7,7 +7,30 @@ class Material(object):
     Please override if you need special attributes such as actuation or cilia
     """
 
+    """
+    isTarget 0 or 1
+    isMeasured 0 or 1
+    Fixed 0 or 1
+    sticky 0 or 1
+    Cilia 0 .. 1 or other Real
+    isPaceMaker 0 or 1
+    PaceMakerPeriod a real number in second
+    signalValueDecay 0.0 ~ 1.0
+    signalTimeDelay a real number in second
+    inactivePeriod a real number in second
+    MatModel 0 or 1
+    Elastic_Mod a real number in Pascal
+    Fail_Stress a real number in Pascal
+    Density a real number in kg/m^3
+    Poissons_Ratio 0.0 ~ 0.5
+    CTE small real number (meaning 0.1 is pretty high)
+    uStatic 0.0 ~ 5.0
+    uDynamic 0.0 ~ 1.0
+    Cilia 0 or 1
+    """
+
     def __init__(self, id, name="", elastic_mod=5e6, friction_static=1, friction_dynamic=0.5, density=1e6, CTE=0, color=(1, 1, 0, 1)):
+        #TODO create asserts?
         self.id = id
         self.name = name
         self.elastic_mod = elastic_mod
