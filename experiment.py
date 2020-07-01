@@ -9,9 +9,10 @@ if __name__ == "__main__":
 
   number_of_materials = 1
   exp_folder = "./experiment_data"
+  robot_folder = "./demo"
 
   dist_fit = Distance( exp_folder )
-  simulation = SM( number_of_materials, dist_fit.fitness, "./demo", exp_folder, True )
+  simulation = SM( number_of_materials, dist_fit.fitness, robot_folder, exp_folder, True )
 
   px = cm_map_elites.default_params.copy()
   px["parallel"] = False #voxcraft-sim may allocate quite a bit of memory for one simulation
