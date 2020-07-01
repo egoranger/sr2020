@@ -1,7 +1,6 @@
-# EvoSoroCore
+# EvoSoroCore forked()
 
-A python 3 port of [Sam Kriegman's](http://skriegman.github.io/) [evosoro](https://github.com/skriegman/evosoro) which is a python 2 tool suite for automating the design of soft robots.
-
+A forked version of EvoSoroCore
 
 ## Dependencies
 * numpy
@@ -9,5 +8,3 @@ A python 3 port of [Sam Kriegman's](http://skriegman.github.io/) [evosoro](https
 * networkx
 * lxml
 
-## Install
-* `python setup.py install`
