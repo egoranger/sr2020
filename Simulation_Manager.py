@@ -97,6 +97,8 @@ class SimulationManager( object ):
 
     if self.verbose:
       print("Fitness for current experiment was:", fit, "and descriptor was:", desc )
+
+    self.sim_run += 1
    
     return fit, desc 
 
