@@ -54,6 +54,7 @@ class SimulationManager( object ):
   
   def create_base_vxa( self ):
     self.vxa.write_to_xml( self.folder_bot + "/base.vxa", self.materials )
+    self.vxa.write_to_xml( self.folder_exp_data + "/sim_run{0}.vxa".format( self.sim_run ), self.materials )
 
   def run_simulator( self ):
     """
@@ -65,14 +66,14 @@ class SimulationManager( object ):
     assert os.path.exists("./voxcraft-sim") and os.path.exists("./vx3_node_worker"), "voxcraft-sim or vx3_node_worker do not exist in the current folder_bot"
 
     if self.verbose:
-      print("running simulation")
+      print( "running simulation #{0}".format( self.sim_run ) )
     #TODO get rid of the output? /give an option to control the output?
 
     while True: #taken from voxcraft-evo
       try:
         #TODO for vx3_node_worker when file exists (too quick simulation runs)
         #TODO formatting?
-        sub.call( "./voxcraft-sim -i {0} -o {1}/sim_run{2}.xml -f"\
+        sub.call( "./voxcraft-sim -i {0} -o {1}/sim_run{2}.xml -f > {1}/sim_run{2}.history"\
                   .format( self.folder_bot, self.folder_exp_data, self.sim_run ), shell=True ) #shell=True shouldn't be normally used
         break
       except IOError:
