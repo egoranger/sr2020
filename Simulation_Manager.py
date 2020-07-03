@@ -24,7 +24,7 @@ class SimulationManager( object ):
     self.verbose = verbose
     self.sim_run = 0
     self.par_cnt = 5 #number of parameters for materials
-    self.mult_arr = np.array( [ 10e7, 5, 1, 1.5e3, 1e-4 ] ) #multiplicative constants for mat properties
+    self.mult_arr = np.array( [ 1e7, 5, 1, 1.5e3, 1e-4 ] ) #multiplicative constants for mat properties
 
   def create_materials( self, mat_list ):
     """
