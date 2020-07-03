@@ -17,7 +17,7 @@ default_sim = \
         #number of seconds to run the experiment
         "StopConditionFormula" : 1,
         #number of steps per which we want to record voxels (e.g. 100 means every 100 steps)
-        "RecordStepSize" : 0,
+        "RecordStepSize" : 100,
         #True or False, True if want to record voxels, else False
         "RecordVoxel" : True,
         #True or False, True if we want to record voxel links, else False
@@ -65,7 +65,7 @@ class Sim(object):
         integration = etree.SubElement(sim_root, "Integration")
         etree.SubElement(integration, "DtFrac").text = str(self.DtFrac)
 
-        damping = etree.SubElement(damping, "Damping")
+        damping = etree.SubElement(sim_root, "Damping")
         etree.SubElement(damping, "BondDampingZ").text = str(self.BondDampingZ)
         etree.SubElement(damping, "ColDampingZ").text = str(self.ColDampingZ)
         etree.SubElement(damping, "SlowDampingZ").text = str(self.SlowDampingZ)

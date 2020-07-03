@@ -2,8 +2,8 @@
 
 #NOTE: we are expected to work with our updated version of evosorocore
 from evosorocore.Material import Material as Mat
-from evosorocore.Simulator import Sim
-from evosorocore.Environment import Env,VXC_Wrapper
+from evosorocore.Simulator import Sim,default_sim
+from evosorocore.Environment import Env,default_env,VXC_Wrapper
 from lxml import etree
 
 class VXA( object ):
@@ -13,20 +13,20 @@ class VXA( object ):
   VXA object does not contain Material details.
   """
 
-  def __init__( self ):
+  def __init__( self, sim_params=default_sim.copy(), env_params=default_env.copy() ):
     self.root = None
-    self.sim = None
-    self.vxc = None
+    self.sim = Sim( sim_params )
+    self.env = Env( env_params )
+    self.vxc = VXC_Wrapper()
 
   def write_to_xml( self, path="./base.vxa", materials=[] ):
     """
     Write data to the file specified by the path.
     """
     self.create_header() #override old data
-    self.create_sim()
-    self.create_vxc()
 
     self.sim.write_to_xml( self.root )
+    self.env.write_to_xml( self.root )
     self.vxc.write_to_xml( self.root, materials )
 
     with open( path, "w" ) as f:
@@ -34,13 +34,6 @@ class VXA( object ):
 
   def create_header( self ):
     self.root = etree.Element( "VXA", Version="1.1" )
-
-  #TODO extend parameters
-  def create_sim( self ):
-    self.sim = Sim() 
-
-  def create_vxc( self ):
-    self.vxc = VXC_Wrapper()
 
 #run some tests
 if __name__ == "__main__":
