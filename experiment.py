@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
-from Simulation_Manager import SimulationManager as SM
+from evosorocore.Simulator import default_sim
+from evosorocore.Environment import default_env
 from Utils.fitness import Distance
+from Utils.VXA import VXA
+from Simulation_Manager import SimulationManager as SM
 import map_elites.cvt as cvt_map_elites
 import map_elites.common as cm_map_elites
 
@@ -11,9 +14,16 @@ if __name__ == "__main__":
   exp_folder = "./experiment_data"
   robot_folder = "./demo"
 
-  dist_fit = Distance( exp_folder )
-  simulation = SM( number_of_materials, dist_fit.fitness, robot_folder, exp_folder, True )
+  #simulator and environment parameters
+  sim = default_sim.copy()
+  env = default_env.copy()
+  vxa = VXA( sim, env )
 
+  dist_fit = Distance( exp_folder ) #fitness function based on fistance
+  simulation = SM( number_of_materials, dist_fit.fitness, robot_folder, exp_folder,\
+                   vxa, verbose=True )
+
+  #map elites parameters
   px = cm_map_elites.default_params.copy()
   px["parallel"] = False #voxcraft-sim may allocate quite a bit of memory for one simulation
 

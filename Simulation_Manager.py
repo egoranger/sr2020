@@ -12,15 +12,15 @@ import os
 class SimulationManager( object ):
 
   def __init__( self, material_cnt, fit, folder_bot, folder_exp_data="experiment_data",
-                verbose=False ):
+                vxa=VXA(), vxd=VXD(), verbose=False ):
     self.material_cnt = material_cnt
     self.materials = [] #materials need to be created during simulation process 
     #TODO check whether folders exist
     self.folder_bot = folder_bot #folder where .vxa/.vxd files are stored
     self.folder_exp_data = folder_exp_data #folder where experiment data should be stored
     self.fit = fit #fitness function defined by user needs
-    self.vxa = VXA()
-    self.vxd = VXD()
+    self.vxa = vxa
+    self.vxd = vxd
     self.verbose = verbose
     self.sim_run = 0
     self.par_cnt = 5 #number of parameters for materials
