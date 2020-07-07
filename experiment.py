@@ -34,4 +34,5 @@ if __name__ == "__main__":
   #TODO dim_x depends on # of material properties
   #TODO mapelites data folder
   cvt_map_elites.compute( 2, 5*number_of_materials, simulation.fitness,
-                          n_niches=10, max_evals=2, log_file=open('cvt.dat', 'w'), params=px )  
+                          n_niches=10, max_evals=2, log_file=open('cvt.dat', 'w'), 
+                          params=px, exp_folder=dirs["mapelites"] + "/" )  

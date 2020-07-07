@@ -168,10 +168,10 @@ def __centroids_filename(k, dim):
     return 'centroids_' + str(k) + '_' + str(dim) + '.dat'
 
 
-def __write_centroids(centroids):
+def __write_centroids(centroids, folder=""):
     k = centroids.shape[0]
     dim = centroids.shape[1]
-    filename = __centroids_filename(k, dim)
+    filename = folder + __centroids_filename(k, dim)
     with open(filename, 'w') as f:
         for p in centroids:
             for item in p:
@@ -179,9 +179,9 @@ def __write_centroids(centroids):
             f.write('\n')
 
 
-def cvt(k, dim, samples, cvt_use_cache=True):
+def cvt(k, dim, samples, cvt_use_cache=True, folder=""):
     # check if we have cached values
-    fname = __centroids_filename(k, dim)
+    fname = folder + __centroids_filename(k, dim)
     if cvt_use_cache:
         if Path(fname).is_file():
             print("WARNING: using cached CVT:", fname)
@@ -211,11 +211,11 @@ def parallel_eval(evaluate_function, to_evaluate, pool, params):
 
 # format: fitness, centroid, desc, genome \n
 # fitness, centroid, desc and x are vectors
-def __save_archive(archive, gen):
+def __save_archive(archive, gen, folder=""):
     def write_array(a, f):
         for i in a:
             f.write(str(i) + ' ')
-    filename = 'archive_' + str(gen) + '.dat'
+    filename = folder + 'archive_' + str(gen) + '.dat'
     with open(filename, 'w') as f:
         for k in archive.values():
             f.write(str(k.fitness) + ' ')
