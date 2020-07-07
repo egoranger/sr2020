@@ -1,13 +1,18 @@
 # Summer Research 2020
 
+## Dependencies
+
+[voxcraft-sim](https://github.com/voxcraft/voxcraft-sim)
+python packages: numpy, sklearn, lxml
+```console
+sr2020@union:~$ pip3 install --user numpy sklearn lxml
+```
+
+You can use [voxcraft-viz](https://github.com/voxcraft/voxcraft-viz) to visualize the data.
+
 ## Setup
 
 Clone this repo.
-
-For now, some folders need to be manually create. These folders are specified in `experiment.py` (exp\_folder and robot\_folder).
-```console
-sr2020@union:~$ mkdir experiment_data
-```
 
 Create some .vxd file(s) in the demo (robot\_folder) folder. You can take a look at the `bot.vxd` to see what .vxd file should look like.
 
@@ -20,6 +25,8 @@ sr2020@union:~$ python experiment.py
 ```
 
 ## Changing properties
+
+Checkout the [voxcraft docs](https://gpuvoxels.readthedocs.io/) if you're not sure what the settings are doing.
 
 You may change some of the properties for simulations. Example usage:
 ```python
