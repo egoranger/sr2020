@@ -11,7 +11,7 @@ import os
 
 class SimulationManager( object ):
 
-  def __init__( self, material_cnt, fit, folder_bot, folder_exp_data="experiment_data",
+  def __init__( self, material_cnt, fit, folder_bot, folder_exp_data,
                 vxa=VXA(), vxd=VXD(), verbose=False ):
     self.material_cnt = material_cnt
     self.materials = [] #materials need to be created during simulation process 
@@ -54,7 +54,9 @@ class SimulationManager( object ):
   
   def create_base_vxa( self ):
     self.vxa.write_to_xml( self.folder_bot + "/base.vxa", self.materials )
-    self.vxa.write_to_xml( self.folder_exp_data + "/sim_run{0}.vxa".format( self.sim_run ), self.materials )
+    #TODO create one file where all material data are going to be stored?
+    self.vxa.write_to_xml( self.folder_exp_data + "/simdata/sim_run{0}.vxa".format( self.sim_run ),
+                           self.materials ) #copy of the vxa file
 
   def run_simulator( self ):
     """
@@ -74,7 +76,7 @@ class SimulationManager( object ):
         #TODO for vx3_node_worker when file exists (too quick simulation runs)
         #TODO formatting?
         sub.call( "./voxcraft-sim -i {0} -o {1}/sim_run{2}.xml -f > {1}/sim_run{2}.history"\
-                  .format( self.folder_bot, self.folder_exp_data, self.sim_run ), shell=True ) #shell=True shouldn't be normally used
+                  .format( self.folder_bot, self.folder_exp_data + "/simdata", self.sim_run ), shell=True ) #shell=True shouldn't be normally used
         break
       except IOError:
         if self.verbose:
