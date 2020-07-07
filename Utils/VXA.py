@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
-#NOTE: we are expected to work with our updated version of evosorocore
-from evosorocore.Material import Material as Mat
-from evosorocore.Simulator import Sim,default_sim
-from evosorocore.Environment import Env,default_env,VXC_Wrapper
+from evosorocore2.Material import Material as Mat
+from evosorocore2.Simulator import Sim,default_sim
+from evosorocore2.Environment import Env,default_env,VXC_Wrapper
 from lxml import etree
 
 class VXA( object ):

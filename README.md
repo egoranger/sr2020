@@ -4,11 +4,6 @@
 
 Clone this repo.
 
-If you have evosorocore already installed, we will need to get rid of it.
-```console
-sr2020@union:~$ sudo pip uninstall evosorocore
-```
-
 For now, some folders need to be manually create. These folders are specified in `experiment.py` (exp\_folder and robot\_folder).
 ```console
 sr2020@union:~$ mkdir experiment_data
@@ -28,7 +23,7 @@ sr2020@union:~$ python experiment.py
 
 You may change some of the properties for simulations. Example usage:
 ```python
-from evosorocore.Environment import default_env
+from evosorocore2.Environment import default_env
 
 env = default_env.copy()
 env["TempPeriod"] = 0.2
@@ -89,6 +84,56 @@ default_sim = \
         "SavePositionOfAllVoxels" : False,
         #real number, sometimes we need to count how many pairs of Target voxels are close to each other
         "MaxDistInVoxelLengthsToCountAsPair" : 0
+    }
+```
+### `Material.py`
+```python
+default_mat = \
+    {
+        #material id
+        "id" : 0,
+        #material name
+        "Name" : "Default name",
+        #material color, rgba
+        "color" : (1,0,1,1),
+        #True if we want voxels of this mat. to be target, else False
+        "isTarget" : False,
+        #True if we want to measure voxels made by this mat. in all MathTree fcs(), else False
+        "isMeasured" : True,
+        #True if we don't want this material to move at all, else False
+        "Fixed" : False,
+        #True if we want attachment happen to this mat., else False
+        "Sticky" : False,
+        #real number, 0 if we don't want cilia to happen
+        "Cilia" : 0,
+        #True if this mat. can generate periodic signals, else False
+        "isPaceMaker" : False,
+        #real number, period between two signal
+        "PaceMakerPeriod" : 0,
+        #0.0 ~ 1.0, decay ratio of signal propagation in other parts of the body
+        "signalValueDecay" : 0.9,
+        #real number/sec delay of signal at every stop
+        "signalTimeDelay" : 0.03,
+        #real number how long does voxel stay inactive after sending signal
+        "inactivePeriod" : 0.03,
+        #False simple elastic model, True for perfectly elastic mat.
+        "MatModel" : False,
+        #real number in Pascal, Young's Modulus
+        "Elastic_Mod" : 0,
+        #real number in Pascal, if stress > threshold -> mat. will fail by fracture
+        "Fail_Stress" : 0,
+        #real number in kg/m^3, e.g. rubber's density 1.5e+3 kg/m^3
+        "Density" : 0,
+        #0.0 ~ 0.5
+        "Poissons_Ratio" : 0,
+        #small real number in 1/degree Celsius
+        "CTE" : 0,
+        #0.0 ~ 5.0, static frictional coefficient
+        "uStatic" : 0,
+        #0.0 ~ 1.0, kinetic frictional coefficient
+        "uDynamic" : 0,
+        #False if this material does not exerting cilia forces, else True
+        "Cilia" : False
     }
 ```
 ### mapelites

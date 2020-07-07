@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-#NOTE: we are expected to work with our updated version of evosorocore
-from evosorocore.Robot import Robot
+from evosorocore2.Robot import Robot
 from lxml import etree
 
 class VXD( object ):

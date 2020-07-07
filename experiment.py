@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from evosorocore.Simulator import default_sim
-from evosorocore.Environment import default_env
+from evosorocore2.Simulator import default_sim
+from evosorocore2.Environment import default_env
 from Utils.fitness import Distance
 from Utils.VXA import VXA
 from Utils.tools import create_folders
@@ -25,7 +25,7 @@ if __name__ == "__main__":
   env = default_env.copy()
   vxa = VXA( sim, env )
 
-  dist_fit = Distance( exp_folder ) #fitness function based on distance
+  dist_fit = Distance( dirs["simulator"] ) #fitness function based on distance
   simulation = SM( number_of_materials, dist_fit.fitness, robot_folder, dirs["experiment"],\
                    vxa, verbose=True )
 

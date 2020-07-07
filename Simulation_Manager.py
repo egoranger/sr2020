@@ -2,7 +2,7 @@
 
 from Utils.VXA import VXA
 from Utils.VXD import VXD
-from evosorocore.Material import Material,default_mat
+from evosorocore2.Material import Material,default_mat
 from lxml import etree
 import numpy as np
 import subprocess as sub
