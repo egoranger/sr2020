@@ -3,3 +3,8 @@ __pycache__
 *.vxd
 voxcraft-sim
 vx3_node_worker
+*.dat
+*.history
+*.xml
+workspace
+experiment_data
