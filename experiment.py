@@ -11,7 +11,9 @@ import map_elites.common as cm_map_elites
 
 if __name__ == "__main__":
 
-  number_of_materials = 1
+  #TODO seeds
+
+  number_of_materials = 4
   exp_folder = "./experiment_data"
   robot_folder = "./demo"
 

@@ -2,7 +2,7 @@
 
 from Utils.VXA import VXA
 from Utils.VXD import VXD
-from evosorocore.Material import Material
+from evosorocore.Material import Material,default_mat
 from lxml import etree
 import numpy as np
 import subprocess as sub
@@ -24,7 +24,7 @@ class SimulationManager( object ):
     self.verbose = verbose
     self.sim_run = 0
     self.par_cnt = 5 #number of parameters for materials
-    self.mult_arr = np.array( [ 1e7, 5, 1, 1.5e3, 1e-4 ] ) #multiplicative constants for mat properties
+    self.mult_arr = np.array( [ 1e5, 5, 1, 1.5e3, 1e-4 ] ) #multiplicative constants for mat properties
 
   def create_materials( self, mat_list ):
     """
@@ -36,8 +36,8 @@ class SimulationManager( object ):
     assert self.material_cnt == len( mat_list ), "Number of materials differs from the number of materials expected"
     self.materials = []
 
-    for m,i in zip( mat_list, range( len( mat_list ) ) ):
-      self.materials.append( Material( i, str( i ), m[0], m[1], m[2], m[3], m[4] ) )
+    for m in mat_list:
+      self.materials.append( Material( m ) )
 
   def convert_materials( self, mat_arr ):
     """
@@ -50,7 +50,23 @@ class SimulationManager( object ):
     assert len( mat_arr.shape ) == 1, "Wrong shape of an array with materials"
     assert mat_arr.shape[0] % c == 0, "Wrong number of parameters, cannot construct list of materials"
     
-    return [ mat_arr[ i*c : c + i*c ] * self.mult_arr for i in range( self.material_cnt ) ]
+    mats = []
+
+    for i in range( self.material_cnt ):
+      extract = mat_arr[ i*c : c + i*c ] * self.mult_arr
+      new_mat = default_mat.copy()
+      new_mat["id"] = i
+      new_mat["Name"] = "Material " + str( i )
+      new_mat["color"] = tuple( np.random.random( 3 ) ) + ( 1, )
+      new_mat["Elastic_Mod"] = extract[0]
+      new_mat["uStatic"] = extract[1]
+      new_mat["uDynamic"] = extract[2]
+      new_mat["Density"] = extract[3]
+      new_mat["CTE"] = extract[4]
+
+      mats.append( new_mat )
+
+    return mats
   
   def create_base_vxa( self ):
     self.vxa.write_to_xml( self.folder_bot + "/base.vxa", self.materials )
