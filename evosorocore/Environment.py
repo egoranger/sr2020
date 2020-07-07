@@ -12,6 +12,8 @@ default_env = \
         "FloorEnabled" : True,
         #True or False (this way we can move the voxels)
         "VaryTempEnabled" : True,
+        #degrees of Celsius
+        "TempBase" : 25,
         #a real number in degree Celsius (amplitude of temp oscillation)
         "TempAmplitude" : 0,
         #a real number in second (period of temp oscillation)
@@ -23,12 +25,13 @@ class Env(object):
 
     def __init__(self, parameters=default_env ):
 
-        self.GravEnabled = 1 if default_env["GravEnabled"] else 0
-        self.GravAcc = default_env["GravAcc"]
-        self.FloorEnabled = 1 if default_env["FloorEnabled"] else 0
-        self.VaryTempEnabled = 1 if default_env["VaryTempEnabled"] else 0
-        self.TempAmplitude = default_env["TempAmplitude"]
-        self.TempPeriod = default_env["TempPeriod"]
+        self.GravEnabled = 1 if parameters["GravEnabled"] else 0
+        self.GravAcc = parameters["GravAcc"]
+        self.FloorEnabled = 1 if parameters["FloorEnabled"] else 0
+        self.VaryTempEnabled = 1 if parameters["VaryTempEnabled"] else 0
+        self.TempBase = parameters["TempBase"]
+        self.TempAmplitude = parameters["TempAmplitude"]
+        self.TempPeriod = parameters["TempPeriod"]
 
     def write_to_xml( self, root ):
 
@@ -41,6 +44,7 @@ class Env(object):
         
         thermal = etree.SubElement(env_root, "Thermal")
         etree.SubElement(thermal, "VaryTempEnabled").text = str(self.VaryTempEnabled)
+        etree.SubElement(thermal, "TempBase").text = str(self.TempBase)
         etree.SubElement(thermal, "TempAmplitude").text = str(self.TempAmplitude)
         etree.SubElement(thermal, "TempPeriod").text = str(self.TempPeriod)
 
