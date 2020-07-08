@@ -38,6 +38,10 @@ class Distance( object ):
     based on distance traveled in x,y coordinates.
     If there are multiple robot data present, take the average.
     """
+
+    if sim_run is None:
+      return self.fitness_fake()
+
     initial, final = self.parser( sim_run )
 
     vectors = np.absolute( final[:,:2] - initial[:,:2] )
@@ -45,6 +49,13 @@ class Distance( object ):
     avg = np.average( vec_sizes )
 
     return avg, np.array( [ np.average( vectors[:,:1] ), np.average( vectors[:,1:2] ) ] )
+
+  def fitness_fake( self ):
+    """
+    @output: zero fitness and desc
+    Sometimes the simulation may fail, we may or we may not want to ignore this.
+    """
+    return -1, np.array( [0] * 2 )
 
 if __name__ == "__main__":
   fit = Distance(".")

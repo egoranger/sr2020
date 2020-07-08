@@ -12,7 +12,7 @@ import os
 class SimulationManager( object ):
 
   def __init__( self, material_cnt, fit, folder_bot, folder_exp_data,
-                vxa=VXA(), vxd=VXD(), verbose=False ):
+                mult_arr, vxa=VXA(), vxd=VXD(), verbose=False ):
     self.material_cnt = material_cnt
     self.materials = [] #materials need to be created during simulation process 
     #TODO check whether folders exist
@@ -24,7 +24,7 @@ class SimulationManager( object ):
     self.verbose = verbose
     self.sim_run = 0
     self.par_cnt = 5 #number of parameters for materials
-    self.mult_arr = np.array( [ 1e5, 5, 1, 1.5e3, 1e-4 ] ) #multiplicative constants for mat properties
+    self.mult_arr = mult_arr #multiplicative constants for mat properties
 
   def create_materials( self, mat_list ):
     """
@@ -52,8 +52,10 @@ class SimulationManager( object ):
     
     mats = []
 
+    mat_arr *= self.mult_arr
+
     for i in range( self.material_cnt ):
-      extract = mat_arr[ i*c : c + i*c ] * self.mult_arr
+      extract = mat_arr[ i*c : c + i*c ]
       new_mat = default_mat.copy()
       new_mat["id"] = i + 1
       new_mat["Name"] = "Material " + str( i )
@@ -111,8 +113,15 @@ class SimulationManager( object ):
    
     self.create_materials( self.convert_materials( materials ) )
     self.create_base_vxa()
+
     self.run_simulator()
-    fit, desc = self.fit( self.sim_run )
+
+    try:
+      fit, desc = self.fit( self.sim_run )
+    except:
+      if self.verbose:
+        print("There was an unexpected error in the current simulation! Skipping...")
+      fit, desc = self.fit( None )
 
     if self.verbose:
       print("Fitness for current experiment was:", fit, "and descriptor was:", desc )
