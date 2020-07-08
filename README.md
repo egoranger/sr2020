@@ -46,8 +46,12 @@ default_env = \
         "GravAcc" : -9.81,
         #True or False (False will let things fall for ever)
         "FloorEnabled" : True,
+        #Is temperature enabled?
+        "TempEnabled" : False,
         #True or False (this way we can move the voxels)
-        "VaryTempEnabled" : True,
+        "VaryTempEnabled" : False,
+        #degrees of Celsius
+        "TempBase" : 25,
         #a real number in degree Celsius (amplitude of temp oscillation)
         "TempAmplitude" : 0,
         #a real number in second (period of temp oscillation)
@@ -139,8 +143,6 @@ default_mat = \
         "uStatic" : 0,
         #0.0 ~ 1.0, kinetic frictional coefficient
         "uDynamic" : 0,
-        #False if this material does not exerting cilia forces, else True
-        "Cilia" : False
     }
 ```
 ### mapelites

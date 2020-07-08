@@ -10,8 +10,10 @@ default_env = \
         "GravAcc" : -9.81,
         #True or False (False will let things fall for ever)
         "FloorEnabled" : True,
+        #Is temperature enabled?
+        "TempEnabled" : False,
         #True or False (this way we can move the voxels)
-        "VaryTempEnabled" : True,
+        "VaryTempEnabled" : False,
         #degrees of Celsius
         "TempBase" : 25,
         #a real number in degree Celsius (amplitude of temp oscillation)
@@ -28,6 +30,7 @@ class Env(object):
         self.GravEnabled = 1 if parameters["GravEnabled"] else 0
         self.GravAcc = parameters["GravAcc"]
         self.FloorEnabled = 1 if parameters["FloorEnabled"] else 0
+        self.TempEnabled = 1 if parameters["TempEnabled"] else 0
         self.VaryTempEnabled = 1 if parameters["VaryTempEnabled"] else 0
         self.TempBase = parameters["TempBase"]
         self.TempAmplitude = parameters["TempAmplitude"]
@@ -43,6 +46,7 @@ class Env(object):
         etree.SubElement(gravity, "FloorEnabled").text = str(self.FloorEnabled)
         
         thermal = etree.SubElement(env_root, "Thermal")
+        etree.SubElement(thermal, "TempEnabled").text = str(self.TempEnabled)
         etree.SubElement(thermal, "VaryTempEnabled").text = str(self.VaryTempEnabled)
         etree.SubElement(thermal, "TempBase").text = str(self.TempBase)
         etree.SubElement(thermal, "TempAmplitude").text = str(self.TempAmplitude)

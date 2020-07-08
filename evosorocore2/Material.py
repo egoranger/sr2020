@@ -44,8 +44,6 @@ default_mat = \
         "uStatic" : 0,
         #0.0 ~ 1.0, kinetic frictional coefficient
         "uDynamic" : 0,
-        #False if this material does not exerting cilia forces, else True
-        "Cilia" : False
     }
 
 class Material(object):
@@ -76,7 +74,6 @@ class Material(object):
         self.CTE = parameters["CTE"]
         self.uStatic = parameters["uStatic"]
         self.uDynamic = parameters["uDynamic"]
-        self.Cilia = 1 if parameters["Cilia"] else 0
 
     def write_to_xml( self, root ):
         
