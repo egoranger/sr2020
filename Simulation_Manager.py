@@ -55,7 +55,7 @@ class SimulationManager( object ):
     for i in range( self.material_cnt ):
       extract = mat_arr[ i*c : c + i*c ] * self.mult_arr
       new_mat = default_mat.copy()
-      new_mat["id"] = i
+      new_mat["id"] = i + 1
       new_mat["Name"] = "Material " + str( i )
       new_mat["color"] = tuple( np.random.random( 3 ) ) + ( 1, )
       new_mat["Elastic_Mod"] = extract[0]
