@@ -129,7 +129,7 @@ class SimulationManager( object ):
       fit, desc = self.fit( None )
 
     if math.isnan( fit ):
-      if verbose:
+      if self.verbose:
         print("Fitness returned as NaN! Skipping")
       fit, desc = self.fit( None )
 
