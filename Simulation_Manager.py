@@ -15,7 +15,6 @@ class SimulationManager( object ):
                 mult_arr, vxa=VXA(), vxd=VXD(), verbose=False ):
     self.material_cnt = material_cnt
     self.materials = [] #materials need to be created during simulation process 
-    #TODO check whether folders exist
     self.folder_bot = folder_bot #folder where .vxa/.vxd files are stored
     self.folder_exp_data = folder_exp_data #folder where experiment data should be stored
     self.fit = fit #fitness function defined by user needs
@@ -25,6 +24,13 @@ class SimulationManager( object ):
     self.sim_run = 0
     self.par_cnt = 5 #number of parameters for materials
     self.mult_arr = mult_arr #multiplicative constants for mat properties
+
+    self.check() #do some assert checks
+
+  def check( self ):
+    assert os.path.exists("./voxcraft-sim") and os.path.exists("./vx3_node_worker"), "voxcraft-sim or vx3_node_worker do not exist in the current folder_bot"
+    assert self.material_cnt * self.par_cnt == len( self.mult_arr ), "Multiplicative array size seems to be wrong!"
+    assert os.path.exists( self.folder_bot ) and os.path.exists( self.folder_exp_data )
 
   def create_materials( self, mat_list ):
     """
@@ -82,8 +88,6 @@ class SimulationManager( object ):
     Run voxcraft simulation and get data out of it.  
     """
 
-    #TODO move assert to init? we don't need to do this everytime
-    assert os.path.exists("./voxcraft-sim") and os.path.exists("./vx3_node_worker"), "voxcraft-sim or vx3_node_worker do not exist in the current folder_bot"
 
     if self.verbose:
       print( "running simulation #{0}".format( self.sim_run ) )
