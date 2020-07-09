@@ -7,7 +7,7 @@ from lxml import etree
 import numpy as np
 import subprocess as sub
 import os
-
+import math
 
 class SimulationManager( object ):
 
@@ -120,11 +120,17 @@ class SimulationManager( object ):
 
     self.run_simulator()
 
+    #TODO this shouldn't be done here
     try:
       fit, desc = self.fit( self.sim_run )
     except:
       if self.verbose:
         print("There was an unexpected error in the current simulation! Skipping...")
+      fit, desc = self.fit( None )
+
+    if math.isnan( fit ):
+      if verbose:
+        print("Fitness returned as NaN! Skipping")
       fit, desc = self.fit( None )
 
     if self.verbose:
