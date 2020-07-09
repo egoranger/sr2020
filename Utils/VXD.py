@@ -69,7 +69,7 @@ class VXD( object ):
  
     return min_arr
 
-  def create_bot_from_vxa( self, filename ):
+  def create_bot_from_vxa( self, filename, minimize=False ):
     try:
       root = etree.parse( filename )
     except OSError:
@@ -81,9 +81,10 @@ class VXD( object ):
 
     strut = root.find( "*/Structure" )
 
-    arr = self.convert_structure( strut )
-    min_arr = self.minimize_arr( arr )
-    self.robot = Robot( min_arr )
+    arr = self.convert_structure( strut )   
+    if minimize:
+      arr = self.minimize_arr( arr )
+    self.robot = Robot( arr )
 
     return True
      
