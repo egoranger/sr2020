@@ -20,12 +20,14 @@ if __name__ == "__main__":
                          1e6, 5, 1, 1.5e3, -0.1 ] )
   exp_folder = "./experiment_data"
   robot_folder = "./demo"
+  logfile = "simulation.log"
 
   #create experiment folders
   dirs = create_folders( exp_folder )
 
   #simulator and environment parameters
   sim = default_sim.copy()
+  sim["DtFrac"] = 0.5
   sim["RecordStepSize"] = 100
   sim["StopConditionFormula"] = 3
   env = default_env.copy()
@@ -35,16 +37,18 @@ if __name__ == "__main__":
   env["TempPeriod"] = 0.2
   vxa = VXA( sim, env )
 
-  dist_fit = Distance( dirs["simulator"] ) #fitness function based on distance
+  dist_fit = Distance( dirs["simulator"], dirs["experiment"] + "/" + logfile ) #fitness function based on distance
   simulation = SM( number_of_materials, dist_fit.fitness, robot_folder, dirs["experiment"],\
-                   mult_arr, vxa, verbose=True )
+                   mult_arr, vxa, log=dirs["experiment"] + "/" + logfile )
 
   #map elites parameters
   px = cm_map_elites.default_params.copy()
   px["parallel"] = False #voxcraft-sim may allocate quite a bit of memory for one simulation
+  px["batch_size"] = 10
+  px["random_init_batch"] = 10
 
   #TODO dim_x depends on # of material properties
   cvt_map_elites.compute( 2, 5*number_of_materials, simulation.fitness,
-                          n_niches=100, max_evals=200, 
+                          n_niches=100, max_evals=1000, 
                           log_file=open(dirs["mapelites"] + '/cvt.dat', 'w'), 
                           params=px, exp_folder=dirs["mapelites"] + "/" )  

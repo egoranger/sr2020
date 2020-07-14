@@ -2,17 +2,19 @@
 
 from Utils.VXA import VXA
 from Utils.VXD import VXD
+from Utils.tools import file_stream_handler as fsh
 from evosorocore2.Material import Material,default_mat
 from lxml import etree
 import numpy as np
 import subprocess as sub
 import os
 import math
+import logging
 
 class SimulationManager( object ):
 
   def __init__( self, material_cnt, fit, folder_bot, folder_exp_data,
-                mult_arr, vxa=VXA(), vxd=VXD(), verbose=False ):
+                mult_arr, vxa=VXA(), vxd=VXD(), log=None ):
     self.material_cnt = material_cnt
     self.materials = [] #materials need to be created during simulation process 
     self.folder_bot = folder_bot #folder where .vxa/.vxd files are stored
@@ -20,17 +22,24 @@ class SimulationManager( object ):
     self.fit = fit #fitness function defined by user needs
     self.vxa = vxa
     self.vxd = vxd
-    self.verbose = verbose
+    self.logging = logging.getLogger( __name__ ) if log else None #input log will be used as a file name
     self.sim_run = 0
     self.par_cnt = 5 #number of parameters for materials
     self.mult_arr = mult_arr #multiplicative constants for mat properties
 
     self.check() #do some assert checks
 
+    #add formatted stream and file handler to logger
+    if self.logging:
+      f,s = fsh( log )
+      self.logging.addHandler( f )
+      self.logging.addHandler( s )
+      self.logging.setLevel( logging.DEBUG )
+
   def check( self ):
     assert os.path.exists("./voxcraft-sim") and os.path.exists("./vx3_node_worker"), "voxcraft-sim or vx3_node_worker do not exist in the current folder_bot"
     assert self.material_cnt * self.par_cnt == len( self.mult_arr ), "Multiplicative array size seems to be wrong!"
-    assert os.path.exists( self.folder_bot ) and os.path.exists( self.folder_exp_data )
+    assert os.path.exists( self.folder_bot ) and os.path.exists( self.folder_exp_data ), "Folder for experiments or bot folder does not exist!"
 
   def create_materials( self, mat_list ):
     """
@@ -88,25 +97,24 @@ class SimulationManager( object ):
     Run voxcraft simulation and get data out of it.  
     """
 
-
-    if self.verbose:
-      print( "running simulation #{0}".format( self.sim_run ) )
-    #TODO get rid of the output? /give an option to control the output?
+    if self.logging:
+      self.logging.info( "Running simulation #{0}".format( self.sim_run ) )
 
     while True: #taken from voxcraft-evo
       try:
         #TODO for vx3_node_worker when file exists (too quick simulation runs)
         #TODO formatting?
         sub.call( "./voxcraft-sim -i {0} -o {1}/sim_run{2}.xml -f > {1}/sim_run{2}.history"\
+        #sub.call("cp ./dummy.xml {1}/sim_run{2}.xml"\
                   .format( self.folder_bot, self.folder_exp_data + "/simdata", self.sim_run ), shell=True ) #shell=True shouldn't be normally used
         break
       except IOError:
-        if self.verbose:
-          print("IOError, resimulating.")
+        if self.logging:
+          self.logging.warning("IOError, resimulating.")
         pass
       except IndexError:
-        if self.verbose:
-          print("IndexError, resimulating.")
+        if self.logging:
+          self.logging.warning("IndexError, resimulating.")
         pass
 
   def fitness( self, materials ):
@@ -120,24 +128,12 @@ class SimulationManager( object ):
 
     self.run_simulator()
 
-    #TODO this shouldn't be done here
-    try:
-      fit, desc = self.fit( self.sim_run )
-    except:
-      if self.verbose:
-        print("There was an unexpected error in the current simulation! Skipping...")
-      fit, desc = self.fit( None )
+    fit, desc = self.fit( self.sim_run )
 
-    if math.isnan( fit ):
-      if self.verbose:
-        print("Fitness returned as NaN! Skipping")
-      fit, desc = self.fit( None )
-
-    if self.verbose:
-      print("Fitness for current experiment was:", fit, "and descriptor was:", desc )
+    if self.logging:
+      self.logging.info( "Fitness for current experiment #{0} was: {1} and descriptor was: {2}".format( self.sim_run, fit, desc ) )
 
     self.sim_run += 1
-   
     return fit, desc 
 
 if __name__ == "__main__":
