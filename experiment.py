@@ -62,6 +62,7 @@ if __name__ == "__main__":
   px["parallel"] = False #voxcraft-sim may allocate quite a bit of memory for one simulation
   px["batch_size"] = 10
   px["random_init_batch"] = 10
+  px["dump_period"] = 1
 
   logger.info("Running Map Elites now")
   #TODO dim_x depends on # of material properties

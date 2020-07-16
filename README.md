@@ -26,6 +26,35 @@ sr2020@union:~$ python experiment.py
 
 ## Changing properties
 
+### `experiment.py`
+There is a lot of parameters one can change:
+
+`number_of_materials` should be the same as in your `bot.vxd` file.
+
+`mult_arr` is the array that mapelites output gets multiplied with. Each row contains `elastic\_mod, uStatic, uDynamic, density, CTE`.
+
+```python
+#simple example
+number_of_materials = 1
+mult_arr = np.array( [ 1e6, 5, 1, 1.5e3, 0.1 ] )
+```
+
+`exp_folder` is the folder, where the data is going to be saved. Then, each experiment folder has year/month/day/hour/min/sec format.
+
+`robot_folder` - your vxd file(s) needs to be saved here. This is the robot the experiment is going to be ran with. [How to create vxd](./Utils)
+
+`logfile` - name of the logfile
+
+For `simulation, environment and map elites` please check below.
+
+`cvt_map_elites.compute` - here you can change some of the map elites parameters. Most important are:
+
+`n_niches` - our "controller storage"
+
+`max_evals` - when should the experiment stop.
+
+### Changing default parameters
+
 Checkout the [voxcraft docs](https://gpuvoxels.readthedocs.io/) if you're not sure what the settings are doing.
 
 You may change some of the properties for simulations. Example usage:
