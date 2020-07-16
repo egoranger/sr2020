@@ -51,7 +51,7 @@ class VXD( object ):
 
     return np.array( z_list )
 
-  def minimize_arr( self, arr ):
+  def minimize_arr( self, arr, change_mats ):
     """
     @input: numpy array
     @output: minimized numpy array
@@ -62,14 +62,16 @@ class VXD( object ):
     #created minimized array using
     min_arr =  arr[ind[0][0]:ind[0][-1] + 1, ind[1][0]:ind[1][-1] + 1, ind[2][0]:ind[2][-1] + 1]
     #minimize the number of used materials
-    unq = np.unique( min_arr )
-    for i,u in zip( range( 1, len( unq ) + 1 ), unq ):
-      if i != u:
-        min_arr[np.where( min_arr == u )] -= u - i
+    if change_mats:
+      unq = np.unique( min_arr )
+      unq = unq[ unq != 0 ]
+      for i,u in zip( range( 1, len( unq ) + 1 ), unq ):
+        if i != u:
+          min_arr[np.where( min_arr == u )] -= u - i
  
     return min_arr
 
-  def create_bot_from_vxa( self, filename, minimize=False ):
+  def create_bot_from_vxa( self, filename, minimize=False, change_mats=False ):
     try:
       root = etree.parse( filename )
     except OSError:
@@ -79,14 +81,19 @@ class VXD( object ):
       print("An unknown error occured! Please try again.")
       return False
 
-    strut = root.find( "*/Structure" )
+    strut = root.find( "*/Structure" ) if root.find( "*/Structure" ) is not None else root.find( "Structure" )
+    if strut is None:
+      raise Exception("Cannot find Structure in the vxd file")
 
     arr = self.convert_structure( strut )   
     if minimize:
-      arr = self.minimize_arr( arr )
+      arr = self.minimize_arr( arr, change_mats )
     self.robot = Robot( arr )
 
     return True
+
+  def create_bot_from_vxc( self, filename, minimize=False, change_mats=False ):
+    return self.create_bot_from_vxa( filename, minimize, change_mats )
      
 #run some tests
 if __name__ == "__main__":
