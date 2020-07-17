@@ -69,7 +69,7 @@ def use_checkpoint( exp_folder, time_mark ):
       with open( p, "rb" ) as f:
         unpickled_data = pickle.load( f )
       print("Successfully unpickled data.")
-      last_run = re.findall( r'\d+', p.split("/")[-1] )[0]
+      last_run = int( re.findall( r'\d+', p.split("/")[-1] )[0] )
       break
     except pickle.UnpicklingError:
       print( "Unpickling error for {}!".format( p ) )

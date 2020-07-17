@@ -4,7 +4,7 @@ from evosorocore2.Simulator import default_sim
 from evosorocore2.Environment import default_env
 from Utils.fitness import Distance
 from Utils.VXA import VXA
-from Utils.tools import create_folders,file_stream_handler
+from Utils.tools import create_folders,file_stream_handler,use_checkpoint
 from Simulation_Manager import SimulationManager as SM
 import map_elites.cvt as cvt_map_elites
 import map_elites.common as cm_map_elites
@@ -15,21 +15,24 @@ import logging
 
 if __name__ == "__main__":
 
+  #use checkpoint, eg. "200717134521"
+  checkpoint = None
+
   seed = int( time.time() )
   
   random.seed( seed )
   np.random.seed( seed )
 
   number_of_materials = 3
-  mult_arr = np.array( [ 1000, 5, 1, 1.5e3, 0.1,
-                         1000, 5, 1, 1.5e3, 0,
-                         1000, 5, 1, 1.5e3, -0.1 ] )
+  mult_arr = np.array( [ 1e6, 5, 1, 1.5e3, 0.1,
+                         1e7, 5, 1, 1.5e3, 0,
+                         1e6, 5, 1, 1.5e3, -0.1 ] )
   exp_folder = "./experiment_data"
   robot_folder = "./demo"
   logfile = "simulation.log"
 
   #create experiment folders
-  dirs = create_folders( exp_folder )
+  dirs = create_folders( exp_folder, checkpoint )
 
   #create logger
   logger = logging.getLogger( __name__ )
@@ -37,9 +40,13 @@ if __name__ == "__main__":
   logger.addHandler( f )
   logger.addHandler( s )
   logger.setLevel( logging.DEBUG )
+  logger.info( ''.join( ['-'] * 30 ) )
 
-  #save seed
+  #save seed and inform about using checkpoint
   logger.info( "Using seed: {0}".format( seed ) )
+  if checkpoint:
+    logger.info( "Using {} as a checkpoint, using seed above for next runs may not matter."\
+                  .format( checkpoint ) )
 
   #simulator and environment parameters
   sim = default_sim.copy()
@@ -65,13 +72,20 @@ if __name__ == "__main__":
   px["dump_period"] = 10
   px["random_init"] = 0.4
 
-  #run map elites
-  logger.info("Creating Map Elites instance")
-  #TODO perhaps simulator could store dim_map and dim_x?
-  ME = cvt_map_elites.mapelites( 2, 5*number_of_materials, n_niches=100,
-                                 max_evals=500,
-                                 params=px, exp_folder=dirs["mapelites"] + "/",
-                                 sim_log=dirs["experiment"] + "/" + logfile )
+  #create map elites instance (or use cached one)
+  if checkpoint:
+    logger.info("Loading cached Map Elites instance")
+    ME, last_run = use_checkpoint( exp_folder, checkpoint )
+    logger.info("Using cached Map Elites instance")
+    simulation.sim_run = last_run + 1
+  else:
+    logger.info("Creating new Map Elites instance")
+    #TODO perhaps simulator could store dim_map and dim_x?
+    ME = cvt_map_elites.mapelites( 2, 5*number_of_materials, n_niches=100,
+                                   max_evals=500, params=px,
+                                   exp_folder=dirs["mapelites"] + "/" )
 
+  #run map elites
   logger.info("Running Map Elites now")
-  ME.compute( simulation.fitness, log_file=open(dirs["mapelites"] + "/cvt.dat", 'w' ) )
+  ME.compute( simulation.fitness, log_file=open(dirs["mapelites"] + "/cvt.dat", 'w' ),
+              sim_log_f=dirs["experiment"] + "/" + logfile )
