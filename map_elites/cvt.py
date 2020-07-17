@@ -40,6 +40,8 @@
 import math
 import numpy as np
 import multiprocessing
+import logging
+from Utils.tools import file_stream_handler as fsh
 
 # from scipy.spatial import cKDTree : TODO -- faster?
 from sklearn.neighbors import KDTree
@@ -48,7 +50,7 @@ from map_elites import common as cm
 
 
 
-def __add_to_archive(s, centroid, archive, kdt):
+def add_to_archive(s, centroid, archive, kdt):
     niche_index = kdt.query([centroid], k=1)[1][0][0]
     niche = kdt.data[niche_index]
     n = cm.make_hashable(niche)
@@ -65,79 +67,110 @@ def __add_to_archive(s, centroid, archive, kdt):
 
 # evaluate a single vector (x) with a function f and return a species
 # t = vector, function
-def __evaluate(t):
+def evaluate(t):
     z, f = t  # evaluate z with function f
     fit, desc = f(z)
     return cm.Species(z, desc, fit)
 
-# map-elites algorithm (CVT variant)
-def compute(dim_map, dim_x, f,
-            n_niches=1000,
-            max_evals=1e5,
-            params=cm.default_params,
-            log_file=None,
-            variation_operator=cm.variation,
-            exp_folder=""):
-    """CVT MAP-Elites
-       Vassiliades V, Chatzilygeroudis K, Mouret JB. Using centroidal voronoi tessellations to scale up the multidimensional archive of phenotypic elites algorithm. IEEE Transactions on Evolutionary Computation. 2017 Aug 3;22(4):623-30.
+#mapelites class so we can create checkpoints while using it
+class mapelites( object ):
 
-       Format of the logfile: evals archive_size max mean median 5%_percentile, 95%_percentile
-
-    """
-    # setup the parallel processing pool
-    num_cores = multiprocessing.cpu_count()
-    pool = multiprocessing.Pool(num_cores)
-
-    # create the CVT
-    c = cm.cvt(n_niches, dim_map,
-              params['cvt_samples'], params['cvt_use_cache'], exp_folder)
-    kdt = KDTree(c, leaf_size=30, metric='euclidean')
-    cm.__write_centroids(c, exp_folder)
-
-    archive = {} # init archive (empty)
-    n_evals = 0 # number of evaluations since the beginning
-    b_evals = 0 # number evaluation since the last dump
-
-    # main loop
-    while (n_evals < max_evals):
-        to_evaluate = []
-        # random initialization
-        if len(archive) <= params['random_init'] * n_niches:
-            for i in range(0, params['random_init_batch']):
-                x = np.random.uniform(low=params['min'], high=params['max'], size=dim_x)
-                to_evaluate += [(x, f)]
-        else:  # variation/selection loop
-            keys = list(archive.keys())
-            # we select all the parents at the same time because randint is slow
-            rand1 = np.random.randint(len(keys), size=params['batch_size'])
-            rand2 = np.random.randint(len(keys), size=params['batch_size'])
-            for n in range(0, params['batch_size']):
-                # parent selection
-                x = archive[keys[rand1[n]]]
-                y = archive[keys[rand2[n]]]
-                # copy & add variation
-                z = variation_operator(x.x, y.x, params)
-                to_evaluate += [(z, f)]
-        # evaluation of the fitness for to_evaluate
-        s_list = cm.parallel_eval(__evaluate, to_evaluate, pool, params)
-        # natural selection
-        for s in s_list:
-            __add_to_archive(s, s.desc, archive, kdt)
-        # count evals
-        n_evals += len(to_evaluate)
-        b_evals += len(to_evaluate)
-
-        # write archive
-        if b_evals >= params['dump_period'] and params['dump_period'] != -1:
-            print("[{}/{}]".format(n_evals, int(max_evals)), end=" ", flush=True)
-            cm.__save_archive(archive, n_evals, exp_folder)
-            b_evals = 0
-        # write log
-        if log_file != None:
-            fit_list = np.array([x.fitness for x in archive.values()])
-            log_file.write("{} {} {} {} {} {}\n".format(n_evals, len(archive.keys()),
-                    fit_list.max(), np.mean(fit_list), np.median(fit_list),
-                    np.percentile(fit_list, 5), np.percentile(fit_list, 95)))
-            log_file.flush()
-    cm.__save_archive(archive, n_evals, exp_folder)
-    return archive
+    def __init__( self, dim_map, dim_x, simulator, n_niches=1000, max_evals=1e5,
+                  params=cm.default_params, ME_log_file=None,
+                  variation_operator=cm.variation, exp_folder="",
+                  sim_log = None ):
+      self.dim_map = dim_map
+      self.dim_x = dim_x
+      self.simulator = simulator
+      self.n_niches = n_niches
+      self.max_evals = max_evals
+      self.params = params
+      self.log_file = ME_log_file
+      self.variation_operator = variation_operator
+      self.exp_folder = exp_folder
+      self.sim_log = logging.getLogger( __name__ ) if sim_log else None
+  
+      #setup logging
+      if self.sim_log:
+          f,s = fsh( sim_log )
+          self.sim_log.addHandler( f )
+          self.sim_log.addHandler( s )
+          self.logging.setLevel( logging.DEBUG )
+  
+      # setup the parallel processing pool
+      self.num_cores = multiprocessing.cpu_count()
+      self.pool = multiprocessing.Pool( self.num_cores )
+  
+      # create the CVT
+      self.c = cm.cvt( self.n_niches, self.dim_map,
+                self.params['cvt_samples'], self.params['cvt_use_cache'], self.exp_folder )
+      self.kdt = KDTree( self.c, leaf_size=30, metric='euclidean' )
+      cm.write_centroids( self.c, self.exp_folder )
+  
+      self.archive = {} # init archive (empty)
+      self.n_evals = 0 # number of evaluations since the beginning
+      self.b_evals = 0 # number evaluation since the last dump
+  
+    # map-elites algorithm (CVT variant)
+    def compute( self ):
+        """CVT MAP-Elites
+           Vassiliades V, Chatzilygeroudis K, Mouret JB. Using centroidal voronoi tessellations to scale up the multidimensional archive of phenotypic elites algorithm. IEEE Transactions on Evolutionary Computation. 2017 Aug 3;22(4):623-30.
+    
+           Format of the logfile: evals archive_size max mean median 5%_percentile, 95%_percentile
+    
+        """
+    
+        # main loop
+        while self.n_evals < self.max_evals:
+            to_evaluate = []
+            # random initialization
+            if len( self.archive ) <= self.params['random_init'] * self.n_niches:
+  
+                if self.sim_log:
+                    self.sim_log.info("Not enough niches filled, running random")
+  
+                for i in range( 0, self.params['random_init_batch'] ):
+                    x = np.random.uniform( low=self.params['min'], high=self.params['max'],
+                                           size=self.dim_x )
+                    to_evaluate += [(x, self.simulator.fitness)]
+            else:  # variation/selection loop
+  
+                if self.sim_log:
+                    self.sim_log.info("Running variation/selection loop")
+  
+                keys = list( self.archive.keys() )
+                # we select all the parents at the same time because randint is slow
+                rand1 = np.random.randint( len(keys), size=self.params['batch_size'] )
+                rand2 = np.random.randint( len(keys), size=self.params['batch_size'] )
+                for n in range(0, self.params['batch_size'] ):
+                    # parent selection
+                    x = self.archive[keys[rand1[n]]]
+                    y = self.archive[keys[rand2[n]]]
+                    # copy & add variation
+                    z = self.variation_operator(x.x, y.x, self.params)
+                    to_evaluate += [(z, self.simulator.fitness)]
+            # evaluation of the fitness for to_evaluate
+            s_list = cm.parallel_eval(evaluate, to_evaluate, self.pool, self.params)
+            # natural selection
+            for s in s_list:
+                add_to_archive(s, s.desc, self.archive, self.kdt)
+            # count evals
+            self.n_evals += len(to_evaluate)
+            self.b_evals += len(to_evaluate)
+    
+            # write archive
+            if self.b_evals >= self.params['dump_period'] and self.params['dump_period'] != -1:
+                if self.sim_log:
+                    self.sim_log.info("Saving archive_{}.dat".format(self.n_evals))
+                print("[{}/{}]".format( self.n_evals, int( self.max_evals ) ), end=" ", flush=True)
+                cm.save_archive( self.archive, self.n_evals, self.exp_folder )
+                self.b_evals = 0
+            # write log
+            if self.log_file != None:
+                fit_list = np.array([x.fitness for x in self.archive.values()])
+                self.log_file.write("{} {} {} {} {} {}\n".format( self.n_evals, len(self.archive.keys()),
+                        fit_list.max(), np.mean(fit_list), np.median(fit_list),
+                        np.percentile(fit_list, 5), np.percentile(fit_list, 95)))
+                self.log_file.flush()
+        cm.save_archive(self.archive, self.n_evals, self.exp_folder)
+        return self.archive

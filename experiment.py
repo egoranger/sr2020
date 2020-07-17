@@ -60,13 +60,18 @@ if __name__ == "__main__":
   #map elites parameters
   px = cm_map_elites.default_params.copy()
   px["parallel"] = False #voxcraft-sim may allocate quite a bit of memory for one simulation
-  px["batch_size"] = 10
+  px["batch_size"] = 20
   px["random_init_batch"] = 10
-  px["dump_period"] = 1
+  px["dump_period"] = 10
+  px["random_init"] = 0.4
+
+  #run map elites
+  logger.info("Creating Map Elites instance")
+  #TODO perhaps simulator could store dim_map and dim_x?
+  ME = cvt_map_elites.mapelites( 2, 5*number_of_materials, simulation, n_niches=100,
+                                 max_evals=500, ME_log_file=open(dirs["mapelites"] + "/cvt.dat", 'w'),
+                                 params=px, exp_folder=dirs["mapelites"] + "/",
+                                  )
 
   logger.info("Running Map Elites now")
-  #TODO dim_x depends on # of material properties
-  cvt_map_elites.compute( 2, 5*number_of_materials, simulation.fitness,
-                          n_niches=100, max_evals=1000, 
-                          log_file=open(dirs["mapelites"] + '/cvt.dat', 'w'), 
-                          params=px, exp_folder=dirs["mapelites"] + "/" )  
+  ME.compute()
