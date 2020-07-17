@@ -41,6 +41,7 @@ import math
 import numpy as np
 import multiprocessing
 import logging
+import pickle
 from Utils.tools import file_stream_handler as fsh
 
 # from scipy.spatial import cKDTree : TODO -- faster?
@@ -75,17 +76,15 @@ def evaluate(t):
 #mapelites class so we can create checkpoints while using it
 class mapelites( object ):
 
-    def __init__( self, dim_map, dim_x, simulator, n_niches=1000, max_evals=1e5,
+    def __init__( self, dim_map, dim_x, n_niches=1000, max_evals=1e5,
                   params=cm.default_params, ME_log_file=None,
                   variation_operator=cm.variation, exp_folder="",
                   sim_log = None ):
       self.dim_map = dim_map
       self.dim_x = dim_x
-      self.simulator = simulator
       self.n_niches = n_niches
       self.max_evals = max_evals
       self.params = params
-      self.log_file = ME_log_file
       self.variation_operator = variation_operator
       self.exp_folder = exp_folder
       self.sim_log = logging.getLogger( __name__ ) if sim_log else None
@@ -95,30 +94,29 @@ class mapelites( object ):
           f,s = fsh( sim_log )
           self.sim_log.addHandler( f )
           self.sim_log.addHandler( s )
-          self.logging.setLevel( logging.DEBUG )
-  
-      # setup the parallel processing pool
-      self.num_cores = multiprocessing.cpu_count()
-      self.pool = multiprocessing.Pool( self.num_cores )
-  
-      # create the CVT
-      self.c = cm.cvt( self.n_niches, self.dim_map,
-                self.params['cvt_samples'], self.params['cvt_use_cache'], self.exp_folder )
-      self.kdt = KDTree( self.c, leaf_size=30, metric='euclidean' )
-      cm.write_centroids( self.c, self.exp_folder )
+          self.sim_log.setLevel( logging.DEBUG )
   
       self.archive = {} # init archive (empty)
       self.n_evals = 0 # number of evaluations since the beginning
       self.b_evals = 0 # number evaluation since the last dump
   
     # map-elites algorithm (CVT variant)
-    def compute( self ):
+    def compute( self, fitness, log_file=None ):
         """CVT MAP-Elites
            Vassiliades V, Chatzilygeroudis K, Mouret JB. Using centroidal voronoi tessellations to scale up the multidimensional archive of phenotypic elites algorithm. IEEE Transactions on Evolutionary Computation. 2017 Aug 3;22(4):623-30.
     
            Format of the logfile: evals archive_size max mean median 5%_percentile, 95%_percentile
     
         """
+        # setup the parallel processing pool
+        num_cores = multiprocessing.cpu_count()
+        pool = multiprocessing.Pool( num_cores )
+  
+        # create the CVT
+        c = cm.cvt( self.n_niches, self.dim_map,
+                  self.params['cvt_samples'], self.params['cvt_use_cache'], self.exp_folder )
+        kdt = KDTree( c, leaf_size=30, metric='euclidean' )
+        cm.write_centroids( c, self.exp_folder )
     
         # main loop
         while self.n_evals < self.max_evals:
@@ -132,7 +130,7 @@ class mapelites( object ):
                 for i in range( 0, self.params['random_init_batch'] ):
                     x = np.random.uniform( low=self.params['min'], high=self.params['max'],
                                            size=self.dim_x )
-                    to_evaluate += [(x, self.simulator.fitness)]
+                    to_evaluate += [(x, fitness)]
             else:  # variation/selection loop
   
                 if self.sim_log:
@@ -148,29 +146,38 @@ class mapelites( object ):
                     y = self.archive[keys[rand2[n]]]
                     # copy & add variation
                     z = self.variation_operator(x.x, y.x, self.params)
-                    to_evaluate += [(z, self.simulator.fitness)]
+                    to_evaluate += [(z, fitness)]
             # evaluation of the fitness for to_evaluate
-            s_list = cm.parallel_eval(evaluate, to_evaluate, self.pool, self.params)
+            s_list = cm.parallel_eval(evaluate, to_evaluate, pool, self.params)
             # natural selection
             for s in s_list:
-                add_to_archive(s, s.desc, self.archive, self.kdt)
+                add_to_archive(s, s.desc, self.archive, kdt)
             # count evals
             self.n_evals += len(to_evaluate)
             self.b_evals += len(to_evaluate)
     
-            # write archive
+            # write archive and save checkpoint
             if self.b_evals >= self.params['dump_period'] and self.params['dump_period'] != -1:
+
                 if self.sim_log:
                     self.sim_log.info("Saving archive_{}.dat".format(self.n_evals))
+
                 print("[{}/{}]".format( self.n_evals, int( self.max_evals ) ), end=" ", flush=True)
                 cm.save_archive( self.archive, self.n_evals, self.exp_folder )
                 self.b_evals = 0
+
+                #save checkpoint
+                if self.sim_log:
+                    self.sim_log.info("Creating checkpoint pickled_{}.p".format( self.n_evals ) )
+                with open( self.exp_folder + "pickled_{}.p".format( self.n_evals ), "wb" ) as filelog:
+                  pickle.dump( self, filelog ) 
+
             # write log
-            if self.log_file != None:
+            if log_file != None:
                 fit_list = np.array([x.fitness for x in self.archive.values()])
-                self.log_file.write("{} {} {} {} {} {}\n".format( self.n_evals, len(self.archive.keys()),
+                log_file.write("{} {} {} {} {} {}\n".format( self.n_evals, len(self.archive.keys()),
                         fit_list.max(), np.mean(fit_list), np.median(fit_list),
                         np.percentile(fit_list, 5), np.percentile(fit_list, 95)))
-                self.log_file.flush()
+                log_file.flush()
         cm.save_archive(self.archive, self.n_evals, self.exp_folder)
         return self.archive

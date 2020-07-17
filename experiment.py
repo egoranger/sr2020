@@ -21,9 +21,9 @@ if __name__ == "__main__":
   np.random.seed( seed )
 
   number_of_materials = 3
-  mult_arr = np.array( [ 1e6, 5, 1, 1.5e3, 0.1,
-                         1e7, 5, 1, 1.5e3, 0,
-                         1e6, 5, 1, 1.5e3, -0.1 ] )
+  mult_arr = np.array( [ 1000, 5, 1, 1.5e3, 0.1,
+                         1000, 5, 1, 1.5e3, 0,
+                         1000, 5, 1, 1.5e3, -0.1 ] )
   exp_folder = "./experiment_data"
   robot_folder = "./demo"
   logfile = "simulation.log"
@@ -68,10 +68,10 @@ if __name__ == "__main__":
   #run map elites
   logger.info("Creating Map Elites instance")
   #TODO perhaps simulator could store dim_map and dim_x?
-  ME = cvt_map_elites.mapelites( 2, 5*number_of_materials, simulation, n_niches=100,
-                                 max_evals=500, ME_log_file=open(dirs["mapelites"] + "/cvt.dat", 'w'),
+  ME = cvt_map_elites.mapelites( 2, 5*number_of_materials, n_niches=100,
+                                 max_evals=500,
                                  params=px, exp_folder=dirs["mapelites"] + "/",
-                                  )
+                                 sim_log=dirs["experiment"] + "/" + logfile )
 
   logger.info("Running Map Elites now")
-  ME.compute()
+  ME.compute( simulation.fitness, log_file=open(dirs["mapelites"] + "/cvt.dat", 'w' ) )

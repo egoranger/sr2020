@@ -33,7 +33,7 @@ def file_stream_handler( filename ):
   """
   file_handler = logging.FileHandler( filename )
   stream_handler = logging.StreamHandler( sys.stderr )
-  formatter = logging.Formatter('%(asctime)s : %(levelname)8s : %(name)s : %(message)s')
+  formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(name)s : %(message)s')
   file_handler.setFormatter(formatter)
   stream_handler.setFormatter(formatter)
 
