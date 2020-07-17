@@ -164,14 +164,14 @@ def variation(x, z, params):
     y = sbx(x, z, params)
     return y
 
-def __centroids_filename(k, dim):
+def centroids_filename(k, dim):
     return 'centroids_' + str(k) + '_' + str(dim) + '.dat'
 
 
-def __write_centroids(centroids, folder=""):
+def write_centroids(centroids, folder=""):
     k = centroids.shape[0]
     dim = centroids.shape[1]
-    filename = folder + __centroids_filename(k, dim)
+    filename = folder + centroids_filename(k, dim)
     with open(filename, 'w') as f:
         for p in centroids:
             for item in p:
@@ -181,7 +181,7 @@ def __write_centroids(centroids, folder=""):
 
 def cvt(k, dim, samples, cvt_use_cache=True, folder=""):
     # check if we have cached values
-    fname = folder + __centroids_filename(k, dim)
+    fname = folder + centroids_filename(k, dim)
     if cvt_use_cache:
         if Path(fname).is_file():
             print("WARNING: using cached CVT:", fname)
@@ -193,7 +193,7 @@ def cvt(k, dim, samples, cvt_use_cache=True, folder=""):
     k_means = KMeans(init='k-means++', n_clusters=k,
                      n_init=1, n_jobs=-1, verbose=1)#,algorithm="full")
     k_means.fit(x)
-    __write_centroids(k_means.cluster_centers_)
+    write_centroids(k_means.cluster_centers_)
 
     return k_means.cluster_centers_
 
@@ -211,7 +211,7 @@ def parallel_eval(evaluate_function, to_evaluate, pool, params):
 
 # format: fitness, centroid, desc, genome \n
 # fitness, centroid, desc and x are vectors
-def __save_archive(archive, gen, folder=""):
+def save_archive(archive, gen, folder=""):
     def write_array(a, f):
         for i in a:
             f.write(str(i) + ' ')
