@@ -7,10 +7,17 @@ import numpy as np
 import os
 import sys
 import logging
+from glob import glob
+import pickle
+import re
 
-def create_folders( exp_folder ):
+def create_folders( exp_folder, time_mark=None ):
+  """
+  @input: experiment folder, time mark (if we want to use cached data
+  @output: dictionary of paths
+  """
   #get current time in year/month/day/hour/min/sec format
-  curr_time = datetime.now().strftime("%y%m%d%H%M%S")
+  curr_time = datetime.now().strftime("%y%m%d%H%M%S") if time_mark is None else time_mark
   
   if not os.path.exists( exp_folder ):
     os.mkdir( exp_folder )
@@ -18,6 +25,12 @@ def create_folders( exp_folder ):
   dirs = { "mapelites" : exp_folder + "/exp" + curr_time + "/MEdata",
            "simulator" : exp_folder + "/exp" + curr_time + "/simdata",
            "experiment" : exp_folder + "/exp" + curr_time }
+
+  if time_mark is not None:
+    if not os.path.exists( dirs["mapelites"] ) or not os.path.exists( dirs["simulator"] ):
+      raise Exception("Cannot use cached data, {} or {} do not exist!"\
+                       .format( dirs["mapelites"], dirs["simulator"] ) )
+    return dirs
   
   #we want these to throw if anything goes wrong
   os.makedirs( dirs["mapelites"] )
@@ -38,6 +51,32 @@ def file_stream_handler( filename ):
   stream_handler.setFormatter(formatter)
 
   return file_handler, stream_handler
+
+def use_checkpoint( exp_folder, time_mark ):
+  """
+  @input: experiment folder, time mark (of cached experiment data)
+  @output:
+  """
+  dirs = create_folders( exp_folder, time_mark )
+
+  pickled_data = glob( dirs["mapelites"] + "/*.p" )
+  if pickled_data == []:
+    raise Exception("No checkpoints found! Nothing to unpickle.")
+  pickled_data = sorted( pickled_data, reverse=True )
+
+  for p in pickled_data:
+    try:
+      with open( p, "rb" ) as f:
+        unpickled_data = pickle.load( f )
+      print("Successfully unpickled data.")
+      last_run = re.findall( r'\d+', p.split("/")[-1] )[0]
+      break
+    except pickle.UnpicklingError:
+      print( "Unpickling error for {}!".format( p ) )
+    except EOFError:
+      print( "End of file error for {}!".format( p ) )
+ 
+  return unpickled_data, last_run
 
 if __name__ == "__main__":
   x = create_folders( "test" )
