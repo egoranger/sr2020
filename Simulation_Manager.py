@@ -11,6 +11,8 @@ import os
 import math
 import logging
 
+MUT_RAD = 0.1  #maximum mutation radius
+
 class SimulationManager( object ):
 
   def __init__( self, material_cnt, fit, folder_bot, folder_exp_data,
@@ -56,7 +58,7 @@ class SimulationManager( object ):
 
   def convert_materials( self, mat_arr ):
     """
-    @input: mat_arr (np.array)
+    @input: mat_arr (np.array) - the input from MAP-Elites
     @output: list of numpy arrays
     Convert numpy array received by fitness function to more material properties.
     Each array needs to be fixed by some constant. This is defined by self.mult_arr.
@@ -67,7 +69,17 @@ class SimulationManager( object ):
     
     mats = []
 
-    mat_arr *= self.mult_arr
+    print("conver_materials: ME input",mat_arr) 
+    #only want max swing of mat values to be ~10%
+    mutation_radius = self.mult_arr*MUT_RAD
+    #change [0..1] to [-1..1]
+    fullrange = ((mat_arr*2)-1)  
+    #amount to changeby
+    amount_change = fullrange*mutation_radius  
+    print("convert_materials: scaled",amount_change) 
+    #new values
+    mat_arr = self.mult_arr + amount_change
+    print("convert_materials: new vals",mat_arr) 
 
     for i in range( self.material_cnt ):
       extract = mat_arr[ i*c : c + i*c ]
