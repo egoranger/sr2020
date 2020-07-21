@@ -26,7 +26,7 @@ class SimulationManager( object ):
     self.vxd = vxd
     self.logging = logging.getLogger( __name__ ) if log else None #input log will be used as a file name
     self.sim_run = 0
-    self.par_cnt = 5 #number of parameters for materials
+    self.par_cnt = 3 #number of parameters for materials
     self.mult_arr = mult_arr #multiplicative constants for mat properties
 
     self.check() #do some assert checks
@@ -87,11 +87,10 @@ class SimulationManager( object ):
       new_mat["id"] = i + 1
       new_mat["Name"] = "Material " + str( i )
       new_mat["color"] = tuple( np.random.random( 3 ) ) + ( 1, )
-      new_mat["Elastic_Mod"] = extract[0]
-      new_mat["uStatic"] = extract[1]
-      new_mat["uDynamic"] = extract[2]
-      new_mat["Density"] = extract[3]
-      new_mat["CTE"] = extract[4]
+      new_mat["uStatic"] = extract[0]
+      new_mat["CTE"] = extract[1]
+      #this should really be 0..1 unlike the others.
+      new_mat["MaterialTempPhase"] = extract[2]
 
       mats.append( new_mat )
 

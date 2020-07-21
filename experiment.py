@@ -24,9 +24,9 @@ if __name__ == "__main__":
   np.random.seed( seed )
 
   number_of_materials = 3
-  mult_arr = np.array( [ 1e6, 5, 1, 1.5e3, 0.1,
-                         1e7, 5, 1, 1.5e3, 0,
-                         1e6, 5, 1, 1.5e3, -0.1 ] )
+  mult_arr = np.array( [ 1, 1, 1,
+                         1, 1, 1,
+                         1, 1, 1 ] )
   exp_folder = "./experiment_data"
   robot_folder = "./demo"
   logfile = "simulation.log"
@@ -50,14 +50,14 @@ if __name__ == "__main__":
 
   #simulator and environment parameters
   sim = default_sim.copy()
-  sim["DtFrac"] = 0.5
+  sim["DtFrac"] = 1
   sim["RecordStepSize"] = 100
-  sim["StopConditionFormula"] = 3
+  sim["StopConditionFormula"] = 10
   env = default_env.copy()
   env["TempEnabled"] = True
   env["VaryTempEnabled"] = True
   env["TempAmplitude"] = 14.4714
-  env["TempPeriod"] = 0.2
+  env["TempPeriod"] =1 
   vxa = VXA( sim, env )
 
   dist_fit = Distance( dirs["simulator"], dirs["experiment"] + "/" + logfile ) #fitness function based on distance
@@ -81,7 +81,7 @@ if __name__ == "__main__":
   else:
     logger.info("Creating new Map Elites instance")
     #TODO perhaps simulator could store dim_map and dim_x?
-    ME = cvt_map_elites.mapelites( 2, 5*number_of_materials, n_niches=100,
+    ME = cvt_map_elites.mapelites( 3, 3*number_of_materials, n_niches=100,
                                    max_evals=500, params=px,
                                    exp_folder=dirs["mapelites"] + "/" )
 
