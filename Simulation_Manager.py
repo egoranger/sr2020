@@ -26,6 +26,7 @@ class SimulationManager( object ):
     self.sim_run = 0
     self.par_cnt = 5 #number of parameters for materials
     self.mult_arr = mult_arr #multiplicative constants for mat properties
+    self.mut_rad = 0.1
 
     self.check() #do some assert checks
 
@@ -56,7 +57,7 @@ class SimulationManager( object ):
 
   def convert_materials( self, mat_arr ):
     """
-    @input: mat_arr (np.array)
+    @input: mat_arr (np.array) - the input from MAP-Elites
     @output: list of numpy arrays
     Convert numpy array received by fitness function to more material properties.
     Each array needs to be fixed by some constant. This is defined by self.mult_arr.
@@ -67,7 +68,15 @@ class SimulationManager( object ):
     
     mats = []
 
-    mat_arr *= self.mult_arr
+    #JR
+    #only want max swing of mat values to be ~10%
+    mutation_radius = self.mult_arr * self.mut_rad
+    #change [0..1] to [-1..1]
+    fullrange = mat_arr * 2 - 1
+    #amount to changeby
+    amount_change = fullrange * mutation_radius  
+    #new values
+    mat_arr = self.mult_arr + amount_change
 
     for i in range( self.material_cnt ):
       extract = mat_arr[ i*c : c + i*c ]
