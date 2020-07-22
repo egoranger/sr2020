@@ -24,9 +24,9 @@ if __name__ == "__main__":
   np.random.seed( seed )
 
   number_of_materials = 3
-  mult_arr = np.array( [ 1e6, 5, 1, 1.5e3, 0.1,
-                         1e7, 5, 1, 1.5e3, 0,
-                         1e6, 5, 1, 1.5e3, -0.1 ] )
+  mult_arr = np.array( [ 1e6, 5, 1, 1e6, 0.1,
+                         1e7, 5, 1, 1e6, 0,
+                         1e6, 5, 1, 1e6, -0.1 ] )
   exp_folder = "./experiment_data"
   robot_folder = "./demo"
   logfile = "simulation.log"
@@ -56,7 +56,7 @@ if __name__ == "__main__":
   env = default_env.copy()
   env["TempEnabled"] = True
   env["VaryTempEnabled"] = True
-  env["TempAmplitude"] = 14.4714
+  env["TempAmplitude"] = 5 #14.4714
   env["TempPeriod"] = 0.2
   vxa = VXA( sim, env )
 
@@ -68,9 +68,9 @@ if __name__ == "__main__":
   px = cm_map_elites.default_params.copy()
   px["parallel"] = False #voxcraft-sim may allocate quite a bit of memory for one simulation
   px["batch_size"] = 20
-  px["random_init_batch"] = 10
-  px["dump_period"] = 10
-  px["random_init"] = 0.4
+  px["random_init_batch"] = 20
+  px["dump_period"] = 10 #if batch size is bigger, it will be used as a dump_period instead
+  px["random_init"] = 0.7
 
   #create map elites instance (or use cached one)
   if checkpoint:
@@ -81,7 +81,7 @@ if __name__ == "__main__":
   else:
     logger.info("Creating new Map Elites instance")
     #TODO perhaps simulator could store dim_map and dim_x?
-    ME = cvt_map_elites.mapelites( 2, 5*number_of_materials, n_niches=100,
+    ME = cvt_map_elites.mapelites( 2, 5*number_of_materials, n_niches=25,
                                    max_evals=500, params=px,
                                    exp_folder=dirs["mapelites"] + "/" )
 
