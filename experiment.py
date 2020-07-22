@@ -50,9 +50,9 @@ if __name__ == "__main__":
 
   #simulator and environment parameters
   sim = default_sim.copy()
-  sim["DtFrac"] = 1
+  sim["DtFrac"] = 0.9 
   sim["RecordStepSize"] = 100
-  sim["StopConditionFormula"] = 10
+  sim["StopConditionFormula"] = 2
   env = default_env.copy()
   env["TempEnabled"] = True
   env["VaryTempEnabled"] = True

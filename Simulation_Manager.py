@@ -11,7 +11,7 @@ import os
 import math
 import logging
 
-MUT_RAD = 0.1  #maximum mutation radius
+MUT_RAD = 0.2  #maximum mutation radius
 
 class SimulationManager( object ):
 
