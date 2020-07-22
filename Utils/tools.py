@@ -78,6 +78,35 @@ def use_checkpoint( exp_folder, time_mark ):
  
   return unpickled_data, last_run
 
+def check_for_errors( filename ):
+  """
+  @input: filename
+  @output: True if errorless, otherwise False; string - type of error
+  """
+  with open( filename, "r" ) as f:
+    #TODO check for divergence error
+    #TODO check whether the file is correct
+    #TODO general error
+    pass
+  pass
+
+def write_to_xml( root, d ):
+  """
+  @input: etree element, dictionary
+  @output: etree element
+  recursively create xml from dictionary
+  """
+  for x,y in d.items():
+
+    sub = etree.SubElement( root, x )
+
+    if isinstance( y, dict ):
+      write_to_xml( sub, y )
+    else:
+      sub.text = str( y )
+
+  return root
+
 if __name__ == "__main__":
   x = create_folders( "test" )
   print( x["mapelites"], x["simulator"], x["experiment"] )
