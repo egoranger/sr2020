@@ -65,10 +65,10 @@ class Sim(object):
         integration = etree.SubElement(sim_root, "Integration")
         etree.SubElement(integration, "DtFrac").text = str(self.DtFrac)
 
-        damping = etree.SubElement(sim_root, "Damping")
-        etree.SubElement(damping, "BondDampingZ").text = str(self.BondDampingZ)
-        etree.SubElement(damping, "ColDampingZ").text = str(self.ColDampingZ)
-        etree.SubElement(damping, "SlowDampingZ").text = str(self.SlowDampingZ)
+        #damping = etree.SubElement(sim_root, "Damping")
+        #etree.SubElement(damping, "BondDampingZ").text = str(self.BondDampingZ)
+        #etree.SubElement(damping, "ColDampingZ").text = str(self.ColDampingZ)
+        #etree.SubElement(damping, "SlowDampingZ").text = str(self.SlowDampingZ)
 
         stop_condition = etree.SubElement(sim_root, "StopCondition")
         stop_condition_formula = etree.SubElement(stop_condition, "StopConditionFormula")
@@ -81,14 +81,14 @@ class Sim(object):
         etree.SubElement(record_history, "RecordVoxel").text = str(self.RecordVoxel) 
         etree.SubElement(record_history, "RecordLink").text = str(self.RecordLink)
 
-        attachdetach = etree.SubElement(sim_root, "AttachDetach")
-        etree.SubElement(attachdetach, "EnableCollision").text = str(self.EnableCollision)
-        etree.SubElement(attachdetach, "SafetyGuard").text = str(self.SafetyGuard)
+        #attachdetach = etree.SubElement(sim_root, "AttachDetach")
+        #etree.SubElement(attachdetach, "EnableCollision").text = str(self.EnableCollision)
+        #etree.SubElement(attachdetach, "SafetyGuard").text = str(self.SafetyGuard)
 
-        etree.SubElement(sim_root, "EnableSignals").text = str(self.EnableSignals)
-        etree.SubElement(sim_root, "EnableCilia").text = str(self.EnableCilia)
-        etree.SubElement(sim_root, "SavePositionOfAllVoxels").text = str(self.SavePositionOfAllVoxels)
-        etree.SubElement(sim_root, "MaxDistInVoxelLengthsToCountAsPair").text = str(self.MaxDistInVoxelLengthsToCountAsPair)
+        #etree.SubElement(sim_root, "EnableSignals").text = str(self.EnableSignals)
+        #etree.SubElement(sim_root, "EnableCilia").text = str(self.EnableCilia)
+        #etree.SubElement(sim_root, "SavePositionOfAllVoxels").text = str(self.SavePositionOfAllVoxels)
+        #etree.SubElement(sim_root, "MaxDistInVoxelLengthsToCountAsPair").text = str(self.MaxDistInVoxelLengthsToCountAsPair)
         
             
 

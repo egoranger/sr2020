@@ -40,10 +40,10 @@ class Env(object):
 
         env_root = etree.SubElement(root, "Environment")
         
-        gravity = etree.SubElement(env_root, "Gravity")
-        etree.SubElement(gravity, "GravEnabled").text = str(self.GravEnabled)
-        etree.SubElement(gravity, "GravAcc").text = str(self.GravAcc)
-        etree.SubElement(gravity, "FloorEnabled").text = str(self.FloorEnabled)
+        #gravity = etree.SubElement(env_root, "Gravity")
+        #etree.SubElement(gravity, "GravEnabled").text = str(self.GravEnabled)
+        #etree.SubElement(gravity, "GravAcc").text = str(self.GravAcc)
+        #etree.SubElement(gravity, "FloorEnabled").text = str(self.FloorEnabled)
         
         thermal = etree.SubElement(env_root, "Thermal")
         etree.SubElement(thermal, "TempEnabled").text = str(self.TempEnabled)
