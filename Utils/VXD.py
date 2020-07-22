@@ -10,18 +10,14 @@ class VXD( object ):
   In the specified folder "$path" will be created.
   """
   def __init__( self, morphology=None ):
-    self.root = None
     self.robot = Robot( morphology ) 
 
   def write_to_xml( self, path="./bot.vxd" ):
-    self.create_header()
-    self.robot.write_to_xml( self.root ) 
+    root = etree.Element( "VXD" )
+    self.robot.write_to_xml( root ) 
 
     with open( path, "w" ) as f:
-      f.write( etree.tostring( self.root, pretty_print=True ).decode( "utf-8" ) ) #TODO is pretty print and decoding necessary?
-
-  def create_header( self ):
-    self.root = etree.Element( "VXD" )
+      f.write( etree.tostring( root, pretty_print=True ).decode( "utf-8" ) ) #TODO is pretty print and decoding necessary?
 
   def convert_structure( self, structure ):
     """

@@ -13,7 +13,6 @@ class VXA( object ):
   """
 
   def __init__( self, sim_params=default_sim.copy(), env_params=default_env.copy() ):
-    self.root = None
     self.sim = Sim( sim_params )
     self.env = Env( env_params )
     self.vxc = VXC_Wrapper()
@@ -22,17 +21,14 @@ class VXA( object ):
     """
     Write data to the file specified by the path.
     """
-    self.create_header() #override old data
+    root = etree.Element( "VXA", Version="1.1" )
 
-    self.sim.write_to_xml( self.root )
-    self.env.write_to_xml( self.root )
-    self.vxc.write_to_xml( self.root, materials )
+    self.sim.write_to_xml( root )
+    self.env.write_to_xml( root )
+    self.vxc.write_to_xml( root, materials )
 
     with open( path, "w" ) as f:
-      f.write( etree.tostring( self.root, pretty_print=True ).decode( "utf-8" ) ) #TODO is pretty and decoding necessary?
-
-  def create_header( self ):
-    self.root = etree.Element( "VXA", Version="1.1" )
+      f.write( etree.tostring( root, pretty_print=True ).decode( "utf-8" ) ) #TODO is pretty and decoding necessary?
 
 #run some tests
 if __name__ == "__main__":
