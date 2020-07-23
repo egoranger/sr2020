@@ -13,13 +13,8 @@ class Distance( object ):
 
   def __init__( self, exp_folder, log=None ):
     self.exp_folder = exp_folder
-    self.log = logging.getLogger( __name__ ) if log else None
-
-    if self.log:
-      f,s = fsh( log )
-      self.log.addHandler( f )
-      self.log.addHandler( s )
-      self.log.setLevel( logging.DEBUG )
+    self.log_name = log
+    self.desc_size = 2 #size of descriptor for this fitness fnc()
 
   def parser( self, sim_run ):
     """
@@ -76,6 +71,24 @@ class Distance( object ):
     Sometimes the simulation may fail, we may or we may not want to ignore this.
     """
     return 0.0, np.array( [0] * 2 )
+
+  def get_descriptor_size( self ):
+    """
+    @output: return the size of descriptor
+    """
+    return self.desc_size
+
+  def init_logger( self ):
+    """
+    Create logger instance since pickling forgets it. This needs to be called from outside.
+    """
+    self.log = logging.getLogger( __name__ ) if self.log_name else None
+
+    if self.log:
+      f,s = fsh( self.log_name )
+      self.log.addHandler( f )
+      self.log.addHandler( s )
+      self.log.setLevel( logging.DEBUG )
 
 if __name__ == "__main__":
   fit = Distance(".")

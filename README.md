@@ -8,7 +8,7 @@ python packages: numpy, sklearn, lxml
 sr2020@union:~$ pip3 install --user numpy sklearn lxml
 ```
 
-You can use [voxcraft-viz](https://github.com/voxcraft/voxcraft-viz) to visualize the data.
+You can use [voxcraft-viz](https://github.com/voxcraft/voxcraft-viz) to visualize history files.
 
 ## Setup
 
@@ -32,6 +32,12 @@ There is a lot of parameters one can change:
 `number_of_materials` should be the same as in your `bot.vxd` file.
 
 `mult_arr` is the array that mapelites output gets multiplied with. Each row contains `elastic_mod, uStatic, uDynamic, density, CTE`.
+
+You can also run `experiment.py` with some arguments.
+```console
+sr2020@union:~/sr2020$ python experiment.py --message "I've changed CTE from 0.1 to 0.2" #add a message to logfile
+sr2020@union:~/sr2020$ python experiment.py --checkpoint 200717134521 #tell experiment to use given checkpoint
+```
 
 ```python
 #simple example

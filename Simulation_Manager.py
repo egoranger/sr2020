@@ -4,7 +4,6 @@ from Utils.VXA import VXA
 from Utils.VXD import VXD
 from Utils.tools import file_stream_handler as fsh
 from evosorocore2.Material import Material,default_mat
-from lxml import etree
 import numpy as np
 import subprocess as sub
 import os
@@ -13,34 +12,28 @@ import logging
 
 class SimulationManager( object ):
 
-  def __init__( self, material_cnt, fit, folder_bot, folder_exp_data,
+  def __init__( self, material_cnt, fit_object, folder_bot, folder_exp_data,
                 mult_arr, vxa=VXA(), vxd=VXD(), log=None ):
     self.material_cnt = material_cnt
     self.materials = [] #materials need to be created during simulation process 
     self.folder_bot = folder_bot #folder where .vxa/.vxd files are stored
     self.folder_exp_data = folder_exp_data #folder where experiment data should be stored
-    self.fit = fit #fitness function defined by user needs
+    self.fit_object = fit_object #fitness object defined by user needs
     self.vxa = vxa
     self.vxd = vxd
-    self.logging = logging.getLogger( __name__ ) if log else None #input log will be used as a file name
+    self.log_name = log
     self.sim_run = 0
-    self.par_cnt = 5 #number of parameters for materials
     self.mult_arr = mult_arr #multiplicative constants for mat properties
+    self.par_cnt = self.mult_arr.shape[0] // self.material_cnt #number of parameters for materials
     self.mut_rad = 0.1
 
     self.check() #do some assert checks
-
-    #add formatted stream and file handler to logger
-    if self.logging:
-      f,s = fsh( log )
-      self.logging.addHandler( f )
-      self.logging.addHandler( s )
-      self.logging.setLevel( logging.DEBUG )
 
   def check( self ):
     assert os.path.exists("./voxcraft-sim") and os.path.exists("./vx3_node_worker"), "voxcraft-sim or vx3_node_worker do not exist in the current folder_bot"
     assert self.material_cnt * self.par_cnt == len( self.mult_arr ), "Multiplicative array size seems to be wrong!"
     assert os.path.exists( self.folder_bot ) and os.path.exists( self.folder_exp_data ), "Folder for experiments or bot folder does not exist!"
+    assert self.mult_arr.shape[0] % self.material_cnt == 0, "Check mult_arr or material count, current number of parameters given by them is {}".format( self.par_cnt )
 
   def create_materials( self, mat_list ):
     """
@@ -137,13 +130,42 @@ class SimulationManager( object ):
 
     self.run_simulator()
 
-    fit, desc = self.fit( self.sim_run )
+    fit, desc = self.fit_object.fitness( self.sim_run )
 
     if self.logging:
       self.logging.info( "Fitness for current experiment #{0} was: {1} and descriptor was: {2}".format( self.sim_run, fit, desc ) )
 
     self.sim_run += 1
     return fit, desc 
+
+  def get_desc_size( self ):
+    """
+    @output: descriptor size
+    """
+    return self.fit_object.get_descriptor_size()
+
+  def get_feature_space_size( self ):
+    """
+    @output: feature space size
+    """
+    return self.material_cnt * self.par_cnt
+
+  def init_logger( self ):
+    """
+    Initiate logger instance. It gets lost when using pickling. This needs to be
+    called from outside.
+    """
+
+    self.fit_object.init_logger()
+
+    self.logging = logging.getLogger( __name__ ) if self.log_name else None #input log will be used as a file name
+
+    #add formatted stream and file handler to logger
+    if self.logging:
+      f,s = fsh( self.log_name )
+      self.logging.addHandler( f )
+      self.logging.addHandler( s )
+      self.logging.setLevel( logging.DEBUG )
 
 if __name__ == "__main__":
   mgr = SimulationManager( 2, "./demo" )

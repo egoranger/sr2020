@@ -76,23 +76,43 @@ def evaluate(t):
 #mapelites class so we can create checkpoints while using it
 class mapelites( object ):
 
-    def __init__( self, dim_map, dim_x, n_niches=1000, max_evals=1e5,
+    def __init__( self, sim_mngr, n_niches=1000, max_evals=1e5,
                   params=cm.default_params, ME_log_file=None,
-                  variation_operator=cm.variation, exp_folder="" ):
-        self.dim_map = dim_map
-        self.dim_x = dim_x
+                  variation_operator=cm.variation, exp_folder="",
+                  sim_log_name=None ):
+        self.sim_mngr = sim_mngr
         self.n_niches = n_niches
         self.max_evals = max_evals
         self.params = params
         self.variation_operator = variation_operator
         self.exp_folder = exp_folder
+        self.sim_log_name = sim_log_name
   
+        self.dim_map = self.sim_mngr.get_desc_size()
+        self.dim_x = self.sim_mngr.get_feature_space_size()
+
         self.archive = {} # init archive (empty)
         self.n_evals = 0 # number of evaluations since the beginning
         self.b_evals = 0 # number evaluation since the last dump
-  
+
+    def init_loggers( self ):
+        """
+        Init loggers as they get ignored when using pickling
+        """        
+
+        self.sim_mngr.init_logger()
+        
+        #setup logging
+        self.sim_log = logging.getLogger( __name__ ) if self.sim_log_name else None
+    
+        if self.sim_log:
+            f,s = fsh( self.sim_log_name )
+            self.sim_log.addHandler( f )
+            self.sim_log.addHandler( s )
+            self.sim_log.setLevel( logging.DEBUG )   
+ 
     # map-elites algorithm (CVT variant)
-    def compute( self, fitness, log_file=None, sim_log_f=None ):
+    def compute( self, log_file=None ):
         """CVT MAP-Elites
            Vassiliades V, Chatzilygeroudis K, Mouret JB. Using centroidal voronoi tessellations to scale up the multidimensional archive of phenotypic elites algorithm. IEEE Transactions on Evolutionary Computation. 2017 Aug 3;22(4):623-30.
     
@@ -109,14 +129,7 @@ class mapelites( object ):
         kdt = KDTree( c, leaf_size=30, metric='euclidean' )
         cm.write_centroids( c, self.exp_folder )
 
-        #setup logging
-        sim_log = logging.getLogger( __name__ ) if sim_log_f else None
-  
-        if sim_log_f:
-            f,s = fsh( sim_log_f )
-            sim_log.addHandler( f )
-            sim_log.addHandler( s )
-            sim_log.setLevel( logging.DEBUG )   
+        self.init_loggers()
 
         # main loop
         while self.n_evals < self.max_evals:
@@ -124,17 +137,17 @@ class mapelites( object ):
             # random initialization
             if len( self.archive ) <= self.params['random_init'] * self.n_niches:
   
-                if sim_log:
-                    sim_log.info("Not enough niches filled, running random")
+                if self.sim_log:
+                    self.sim_log.info("Not enough niches filled, running random")
   
                 for i in range( 0, self.params['random_init_batch'] ):
                     x = np.random.uniform( low=self.params['min'], high=self.params['max'],
                                            size=self.dim_x )
-                    to_evaluate += [(x, fitness)]
+                    to_evaluate += [(x, self.sim_mngr.fitness)]
             else:  # variation/selection loop
   
-                if sim_log:
-                    sim_log.info("Running variation/selection loop")
+                if self.sim_log:
+                    self.sim_log.info("Running variation/selection loop")
   
                 keys = list( self.archive.keys() )
                 # we select all the parents at the same time because randint is slow
@@ -146,7 +159,7 @@ class mapelites( object ):
                     y = self.archive[keys[rand2[n]]]
                     # copy & add variation
                     z = self.variation_operator(x.x, y.x, self.params)
-                    to_evaluate += [(z, fitness)]
+                    to_evaluate += [(z, self.sim_mngr.fitness)]
             # evaluation of the fitness for to_evaluate
             s_list = cm.parallel_eval(evaluate, to_evaluate, pool, self.params)
             # natural selection
@@ -159,16 +172,16 @@ class mapelites( object ):
             # write archive and save checkpoint
             if self.b_evals >= self.params['dump_period'] and self.params['dump_period'] != -1:
 
-                if sim_log:
-                    sim_log.info("Saving archive_{}.dat".format(self.n_evals))
+                if self.sim_log:
+                    self.sim_log.info("Saving archive_{}.dat".format(self.n_evals))
+                    self.sim_log.info( "[{}/{}]".format( self.n_evals, int( self.max_evals ) ) )
 
-                print("[{}/{}]".format( self.n_evals, int( self.max_evals ) ), end=" ", flush=True)
                 cm.save_archive( self.archive, self.n_evals, self.exp_folder )
                 self.b_evals = 0
 
                 #save checkpoint
-                if sim_log:
-                    sim_log.info("Creating checkpoint pickled_{:08d}.p".format( self.n_evals ) )
+                if self.sim_log:
+                    self.sim_log.info("Creating checkpoint pickled_{:08d}.p".format( self.n_evals ) )
                 with open( self.exp_folder + "pickled_{:08d}.p".format( self.n_evals ), "wb" ) as filelog:
                   pickle.dump( self, filelog ) 
 

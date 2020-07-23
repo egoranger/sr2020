@@ -58,44 +58,45 @@ if __name__ == "__main__":
     logger.info( "Using {} as a checkpoint, using seed above for next runs may not matter."\
                   .format( checkpoint ) )
 
-  #simulator and environment parameters
-  sim = default_sim.copy()
-  sim["DtFrac"] = 0.5
-  sim["RecordStepSize"] = 100
-  sim["StopConditionFormula"] = 3
-  env = default_env.copy()
-  env["TempEnabled"] = True
-  env["VaryTempEnabled"] = True
-  env["TempAmplitude"] = 5 #14.4714
-  env["TempPeriod"] = 0.2
-  vxa = VXA( sim, env )
-
-  dist_fit = Distance( dirs["simulator"], dirs["experiment"] + "/" + logfile ) #fitness function based on distance
-  simulation = SM( number_of_materials, dist_fit.fitness, robot_folder, dirs["experiment"],\
-                   mult_arr, vxa, log=dirs["experiment"] + "/" + logfile )
-
-  #map elites parameters
-  px = cm_map_elites.default_params.copy()
-  px["parallel"] = False #voxcraft-sim may allocate quite a bit of memory for one simulation
-  px["batch_size"] = 20
-  px["random_init_batch"] = 20
-  px["dump_period"] = 10 #if batch size is bigger, it will be used as a dump_period instead
-  px["random_init"] = 0.7
-
   #create map elites instance (or use cached one)
-  if checkpoint:
+  if checkpoint is None:
+
+    #TODO create config file for this
+    #simulator and environment parameters
+    sim = default_sim.copy()
+    sim["DtFrac"] = 0.5
+    sim["RecordStepSize"] = 100
+    sim["StopConditionFormula"] = 3
+    env = default_env.copy()
+    env["TempEnabled"] = True
+    env["VaryTempEnabled"] = True
+    env["TempAmplitude"] = 5 #14.4714
+    env["TempPeriod"] = 0.2
+    vxa = VXA( sim, env )
+
+    dist_fit = Distance( dirs["simulator"], dirs["experiment"] + "/" + logfile ) #fitness function based on distance
+    simulation = SM( number_of_materials, dist_fit, robot_folder, dirs["experiment"],\
+                     mult_arr, vxa, log=dirs["experiment"] + "/" + logfile )
+
+    #map elites parameters
+    px = cm_map_elites.default_params.copy()
+    px["parallel"] = False #voxcraft-sim may allocate quite a bit of memory for one simulation
+    px["batch_size"] = 20
+    px["random_init_batch"] = 20
+    px["dump_period"] = 10 #if batch size is bigger, it will be used as a dump_period instead
+    px["random_init"] = 0.7
+
+    logger.info("Creating new Map Elites instance")
+    ME = cvt_map_elites.mapelites( simulation, n_niches=25,
+                                   max_evals=500, params=px,
+                                   exp_folder=dirs["mapelites"] + "/",
+                                   sim_log_name=dirs["experiment"] + "/" + logfile )
+
+  else:
     logger.info("Loading cached Map Elites instance")
     ME, last_run = use_checkpoint( exp_folder, checkpoint )
     logger.info("Using cached Map Elites instance")
-    simulation.sim_run = last_run + 1
-  else:
-    logger.info("Creating new Map Elites instance")
-    #TODO perhaps simulator could store dim_map and dim_x?
-    ME = cvt_map_elites.mapelites( 2, 5*number_of_materials, n_niches=25,
-                                   max_evals=500, params=px,
-                                   exp_folder=dirs["mapelites"] + "/" )
 
   #run map elites
   logger.info("Running Map Elites now")
-  ME.compute( simulation.fitness, log_file=open(dirs["mapelites"] + "/cvt.dat", 'w' ),
-              sim_log_f=dirs["experiment"] + "/" + logfile )
+  ME.compute( log_file=open(dirs["mapelites"] + "/cvt.dat", 'a' ) )
