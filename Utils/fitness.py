@@ -14,6 +14,7 @@ class Distance( object ):
   def __init__( self, exp_folder, log=None ):
     self.exp_folder = exp_folder
     self.log = logging.getLogger( __name__ ) if log else None
+    self.desc_size = 2 #size of descriptor for this fitness fnc()
 
     if self.log:
       f,s = fsh( log )
@@ -76,6 +77,12 @@ class Distance( object ):
     Sometimes the simulation may fail, we may or we may not want to ignore this.
     """
     return 0.0, np.array( [0] * 2 )
+
+  def get_descriptor_size( self ):
+    """
+    @output: return the size of descriptor
+    """
+    return self.desc_size
 
 if __name__ == "__main__":
   fit = Distance(".")

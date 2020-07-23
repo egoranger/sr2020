@@ -71,7 +71,7 @@ if __name__ == "__main__":
   vxa = VXA( sim, env )
 
   dist_fit = Distance( dirs["simulator"], dirs["experiment"] + "/" + logfile ) #fitness function based on distance
-  simulation = SM( number_of_materials, dist_fit.fitness, robot_folder, dirs["experiment"],\
+  simulation = SM( number_of_materials, dist_fit, robot_folder, dirs["experiment"],\
                    mult_arr, vxa, log=dirs["experiment"] + "/" + logfile )
 
   #map elites parameters
@@ -87,15 +87,13 @@ if __name__ == "__main__":
     logger.info("Loading cached Map Elites instance")
     ME, last_run = use_checkpoint( exp_folder, checkpoint )
     logger.info("Using cached Map Elites instance")
-    simulation.sim_run = last_run + 1
   else:
     logger.info("Creating new Map Elites instance")
-    #TODO perhaps simulator could store dim_map and dim_x?
-    ME = cvt_map_elites.mapelites( 2, 5*number_of_materials, n_niches=25,
+    ME = cvt_map_elites.mapelites( simulation, n_niches=25,
                                    max_evals=500, params=px,
                                    exp_folder=dirs["mapelites"] + "/" )
 
   #run map elites
   logger.info("Running Map Elites now")
-  ME.compute( simulation.fitness, log_file=open(dirs["mapelites"] + "/cvt.dat", 'w' ),
+  ME.compute( log_file=open(dirs["mapelites"] + "/cvt.dat", 'a' ),
               sim_log_f=dirs["experiment"] + "/" + logfile )

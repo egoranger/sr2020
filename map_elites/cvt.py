@@ -76,23 +76,26 @@ def evaluate(t):
 #mapelites class so we can create checkpoints while using it
 class mapelites( object ):
 
-    def __init__( self, dim_map, dim_x, n_niches=1000, max_evals=1e5,
+    def __init__( self, sim_mngr, n_niches=1000, max_evals=1e5,
                   params=cm.default_params, ME_log_file=None,
-                  variation_operator=cm.variation, exp_folder="" ):
-        self.dim_map = dim_map
-        self.dim_x = dim_x
+                  variation_operator=cm.variation, exp_folder="",
+                  sim_mng=None ):
+        self.sim_mngr = sim_mngr
         self.n_niches = n_niches
         self.max_evals = max_evals
         self.params = params
         self.variation_operator = variation_operator
         self.exp_folder = exp_folder
   
+        self.dim_map = self.sim_mngr.get_desc_size()
+        self.dim_x = self.sim_mngr.get_feature_space_size()
+
         self.archive = {} # init archive (empty)
         self.n_evals = 0 # number of evaluations since the beginning
         self.b_evals = 0 # number evaluation since the last dump
   
     # map-elites algorithm (CVT variant)
-    def compute( self, fitness, log_file=None, sim_log_f=None ):
+    def compute( self, log_file=None, sim_log_f=None ):
         """CVT MAP-Elites
            Vassiliades V, Chatzilygeroudis K, Mouret JB. Using centroidal voronoi tessellations to scale up the multidimensional archive of phenotypic elites algorithm. IEEE Transactions on Evolutionary Computation. 2017 Aug 3;22(4):623-30.
     
@@ -130,7 +133,7 @@ class mapelites( object ):
                 for i in range( 0, self.params['random_init_batch'] ):
                     x = np.random.uniform( low=self.params['min'], high=self.params['max'],
                                            size=self.dim_x )
-                    to_evaluate += [(x, fitness)]
+                    to_evaluate += [(x, self.sim_mngr.fitness)]
             else:  # variation/selection loop
   
                 if sim_log:
@@ -146,7 +149,7 @@ class mapelites( object ):
                     y = self.archive[keys[rand2[n]]]
                     # copy & add variation
                     z = self.variation_operator(x.x, y.x, self.params)
-                    to_evaluate += [(z, fitness)]
+                    to_evaluate += [(z, self.sim_mngr.fitness)]
             # evaluation of the fitness for to_evaluate
             s_list = cm.parallel_eval(evaluate, to_evaluate, pool, self.params)
             # natural selection
