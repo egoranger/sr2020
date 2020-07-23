@@ -29,8 +29,8 @@ class Distance( object ):
     try:
       root = etree.parse( self.exp_folder + "/sim_run{0}.xml".format( sim_run ) )
     except:
-      if self.log:
-        self.log.error("There was an error in parsing the xml file: sim_run{0}.xml".format( sim_run ) )
+      if self.logger:
+        self.logger.error("There was an error in parsing the xml file: sim_run{0}.xml".format( sim_run ) )
       return np.zeros( (1,3), dtype=np.int8 ), np.zeros( (1,3), dtype=np.int8 )
 
     for i in root.findall( "detail/*/initialCenterOfMass" ):
@@ -59,8 +59,8 @@ class Distance( object ):
     avg = np.average( vec_sizes )
 
     if math.isnan( avg ):
-      if self.log:
-        self.log.error("Fitness is NaN! Returning 0 instead.")
+      if self.logger:
+        self.logger.error("Fitness is NaN! Returning 0 instead.")
       return self.fitness_fake()
 
     return avg, np.array( [ np.average( vectors[:,:1] ), np.average( vectors[:,1:2] ) ] )
@@ -82,13 +82,15 @@ class Distance( object ):
     """
     Create logger instance since pickling forgets it. This needs to be called from outside.
     """
-    self.log = logging.getLogger( __name__ ) if self.log_name else None
+    log = logging.getLogger( __name__ ) if self.log_name else None
 
-    if self.log:
+    if log:
       f,s = fsh( self.log_name )
-      self.log.addHandler( f )
-      self.log.addHandler( s )
-      self.log.setLevel( logging.DEBUG )
+      log.addHandler( f )
+      log.addHandler( s )
+      log.setLevel( logging.DEBUG )
+
+    return log
 
 if __name__ == "__main__":
   fit = Distance(".")

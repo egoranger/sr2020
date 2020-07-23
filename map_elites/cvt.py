@@ -95,12 +95,13 @@ class mapelites( object ):
         self.n_evals = 0 # number of evaluations since the beginning
         self.b_evals = 0 # number evaluation since the last dump
 
-    def init_loggers( self ):
+    def init_logger( self ):
         """
         Init loggers as they get ignored when using pickling
         """        
 
-        self.sim_mngr.init_logger()
+        #can't use bcs colab has python 3.6.9, need 3.7
+        #self.sim_mngr.init_logger()
         
         #setup logging
         sim_log = logging.getLogger( __name__ ) if self.sim_log_name else None
@@ -131,7 +132,13 @@ class mapelites( object ):
         kdt = KDTree( c, leaf_size=30, metric='euclidean' )
         cm.write_centroids( c, self.exp_folder )
 
-        sim_log = self.init_loggers()
+        #TODO !!!
+        #let's close our eyes and ignore this #googlecolab version
+        sim_log = self.init_logger()
+        sim_mngr_log = self.sim_mngr.init_logger()
+        fit_log = self.sim_mngr.fit_object.init_logger()
+        self.sim_mngr.logger = sim_mngr_log
+        self.sim_mngr.fit_object.logger = fit_log
 
         # main loop
         while self.n_evals < self.max_evals:
@@ -184,8 +191,14 @@ class mapelites( object ):
                 #save checkpoint
                 if sim_log:
                     sim_log.info("Creating checkpoint pickled_{:08d}.p".format( self.n_evals ) )
+                #TODO THIS IS VERY BAD HELP...
+                #switching to None has to be here beacuse of google colab's python version
+                self.sim_mngr.logging = None
+                self.sim_mngr.fit_object.log = None
                 with open( self.exp_folder + "pickled_{:08d}.p".format( self.n_evals ), "wb" ) as filelog:
                   pickle.dump( self, filelog ) 
+                self.sim_mngr.logging = sim_mngr_log
+                self.sim_mngr.fit_object.log = fit_log
 
             # write log
             if log_file != None:

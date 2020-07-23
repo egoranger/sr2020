@@ -99,8 +99,8 @@ class SimulationManager( object ):
     Run voxcraft simulation and get data out of it.  
     """
 
-    if self.logging:
-      self.logging.info( "Running simulation #{0}".format( self.sim_run ) )
+    if self.logger:
+      self.logger.info( "Running simulation #{0}".format( self.sim_run ) )
 
     while True: #taken from voxcraft-evo
       try:
@@ -111,12 +111,12 @@ class SimulationManager( object ):
                   .format( self.folder_bot, self.folder_exp_data + "/simdata", self.sim_run ), shell=True ) #shell=True shouldn't be normally used
         break
       except IOError:
-        if self.logging:
-          self.logging.warning("IOError, resimulating.")
+        if self.logger:
+          self.logger.warning("IOError, resimulating.")
         pass
       except IndexError:
-        if self.logging:
-          self.logging.warning("IndexError, resimulating.")
+        if self.logger:
+          self.logger.warning("IndexError, resimulating.")
         pass
 
   def fitness( self, materials ):
@@ -132,8 +132,8 @@ class SimulationManager( object ):
 
     fit, desc = self.fit_object.fitness( self.sim_run )
 
-    if self.logging:
-      self.logging.info( "Fitness for current experiment #{0} was: {1} and descriptor was: {2}".format( self.sim_run, fit, desc ) )
+    if self.logger:
+      self.logger.info( "Fitness for current experiment #{0} was: {1} and descriptor was: {2}".format( self.sim_run, fit, desc ) )
 
     self.sim_run += 1
     return fit, desc 
@@ -156,16 +156,17 @@ class SimulationManager( object ):
     called from outside.
     """
 
-    self.fit_object.init_logger()
-
-    self.logging = logging.getLogger( __name__ ) if self.log_name else None #input log will be used as a file name
+    logger = logging.getLogger( __name__ ) if self.log_name else None #input log will be used as a file name
 
     #add formatted stream and file handler to logger
-    if self.logging:
+    if logger:
       f,s = fsh( self.log_name )
-      self.logging.addHandler( f )
-      self.logging.addHandler( s )
-      self.logging.setLevel( logging.DEBUG )
+      logger.addHandler( f )
+      logger.addHandler( s )
+      logger.setLevel( logging.DEBUG )
+
+    return logger
+
 
 if __name__ == "__main__":
   mgr = SimulationManager( 2, "./demo" )
