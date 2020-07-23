@@ -112,7 +112,7 @@ class mapelites( object ):
             self.sim_log.setLevel( logging.DEBUG )   
  
     # map-elites algorithm (CVT variant)
-    def compute( self, log_file=None, sim_log_f=None ):
+    def compute( self, log_file=None ):
         """CVT MAP-Elites
            Vassiliades V, Chatzilygeroudis K, Mouret JB. Using centroidal voronoi tessellations to scale up the multidimensional archive of phenotypic elites algorithm. IEEE Transactions on Evolutionary Computation. 2017 Aug 3;22(4):623-30.
     

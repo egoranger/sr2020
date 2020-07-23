@@ -22,9 +22,9 @@ def create_folders( exp_folder, time_mark=None ):
   if not os.path.exists( exp_folder ):
     os.mkdir( exp_folder )
 
-  dirs = { "mapelites" : exp_folder + "/" + curr_time + "exp/MEdata",
-           "simulator" : exp_folder + "/" + curr_time + "exp/simdata",
-           "experiment" : exp_folder + "/" + curr_time + "exp" }
+  dirs = { "mapelites" : exp_folder + "/" + curr_time + "/MEdata",
+           "simulator" : exp_folder + "/" + curr_time + "/simdata",
+           "experiment" : exp_folder + "/" + curr_time }
 
   if time_mark is not None:
     if not os.path.exists( dirs["mapelites"] ) or not os.path.exists( dirs["simulator"] ):
