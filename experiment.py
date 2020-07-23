@@ -12,11 +12,19 @@ import numpy as np
 import random
 import time
 import logging
+import argparse
 
 if __name__ == "__main__":
 
-  #use checkpoint, eg. "200717134521"
-  checkpoint = None
+  parser = argparse.ArgumentParser( description='Run mapelites experiment with voxcraft-sim' )
+  parser.add_argument( '-m', '--message', help="Print message to logfile" )
+  #parse checkpoint as an integer, then convert it to string
+  parser.add_argument( '-c', '--checkpoint', help='Use checkpoint, eg. "200717134521"', type=int )
+
+  args = parser.parse_args()
+
+  checkpoint = str( args.checkpoint ) if args.checkpoint else None 
+  logmessage = args.message
 
   seed = int( time.time() )
   
@@ -41,6 +49,8 @@ if __name__ == "__main__":
   logger.addHandler( s )
   logger.setLevel( logging.DEBUG )
   logger.info( ''.join( ['-'] * 30 ) )
+  if logmessage is not None:
+    logger.info( "User: " + logmessage )
 
   #save seed and inform about using checkpoint
   logger.info( "Using seed: {0}".format( seed ) )
