@@ -103,13 +103,15 @@ class mapelites( object ):
         self.sim_mngr.init_logger()
         
         #setup logging
-        self.sim_log = logging.getLogger( __name__ ) if self.sim_log_name else None
+        sim_log = logging.getLogger( __name__ ) if self.sim_log_name else None
     
         if self.sim_log:
             f,s = fsh( self.sim_log_name )
-            self.sim_log.addHandler( f )
-            self.sim_log.addHandler( s )
-            self.sim_log.setLevel( logging.DEBUG )   
+            sim_log.addHandler( f )
+            sim_log.addHandler( s )
+            sim_log.setLevel( logging.DEBUG )   
+
+        return sim_log
  
     # map-elites algorithm (CVT variant)
     def compute( self, log_file=None ):
@@ -129,7 +131,7 @@ class mapelites( object ):
         kdt = KDTree( c, leaf_size=30, metric='euclidean' )
         cm.write_centroids( c, self.exp_folder )
 
-        self.init_loggers()
+        sim_log = self.init_loggers()
 
         # main loop
         while self.n_evals < self.max_evals:
@@ -137,8 +139,8 @@ class mapelites( object ):
             # random initialization
             if len( self.archive ) <= self.params['random_init'] * self.n_niches:
   
-                if self.sim_log:
-                    self.sim_log.info("Not enough niches filled, running random")
+                if sim_log:
+                    sim_log.info("Not enough niches filled, running random")
   
                 for i in range( 0, self.params['random_init_batch'] ):
                     x = np.random.uniform( low=self.params['min'], high=self.params['max'],
@@ -146,8 +148,8 @@ class mapelites( object ):
                     to_evaluate += [(x, self.sim_mngr.fitness)]
             else:  # variation/selection loop
   
-                if self.sim_log:
-                    self.sim_log.info("Running variation/selection loop")
+                if sim_log:
+                    sim_log.info("Running variation/selection loop")
   
                 keys = list( self.archive.keys() )
                 # we select all the parents at the same time because randint is slow
@@ -172,16 +174,16 @@ class mapelites( object ):
             # write archive and save checkpoint
             if self.b_evals >= self.params['dump_period'] and self.params['dump_period'] != -1:
 
-                if self.sim_log:
-                    self.sim_log.info("Saving archive_{}.dat".format(self.n_evals))
-                    self.sim_log.info( "[{}/{}]".format( self.n_evals, int( self.max_evals ) ) )
+                if sim_log:
+                    sim_log.info("Saving archive_{}.dat".format(self.n_evals))
+                    sim_log.info( "[{}/{}]".format( self.n_evals, int( self.max_evals ) ) )
 
                 cm.save_archive( self.archive, self.n_evals, self.exp_folder )
                 self.b_evals = 0
 
                 #save checkpoint
-                if self.sim_log:
-                    self.sim_log.info("Creating checkpoint pickled_{:08d}.p".format( self.n_evals ) )
+                if sim_log:
+                    sim_log.info("Creating checkpoint pickled_{:08d}.p".format( self.n_evals ) )
                 with open( self.exp_folder + "pickled_{:08d}.p".format( self.n_evals ), "wb" ) as filelog:
                   pickle.dump( self, filelog ) 
 
