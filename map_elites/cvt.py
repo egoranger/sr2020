@@ -105,7 +105,7 @@ class mapelites( object ):
         #setup logging
         sim_log = logging.getLogger( __name__ ) if self.sim_log_name else None
     
-        if self.sim_log:
+        if sim_log:
             f,s = fsh( self.sim_log_name )
             sim_log.addHandler( f )
             sim_log.addHandler( s )
