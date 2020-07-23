@@ -43,18 +43,20 @@ if __name__ == "__main__":
   dirs = create_folders( exp_folder, checkpoint )
 
   #create logger
-  logger = logging.getLogger( __name__ )
-  f,s = file_stream_handler( dirs["experiment"] + "/" + logfile )
-  logger.addHandler( f )
-  logger.addHandler( s )
-  logger.setLevel( logging.DEBUG )
-  logger.info( ''.join( ['-'] * 30 ) )
-  if logmessage is not None:
-    logger.info( "User: " + logmessage )
+  logger = logging.getLogger( __name__ ) if logfile else None
+  if logger:
+    f,s = file_stream_handler( dirs["experiment"] + "/" + logfile )
+    logger.addHandler( f )
+    logger.addHandler( s )
+    logger.setLevel( logging.DEBUG )
+    logger.info( ''.join( ['-'] * 30 ) )
+    if logmessage is not None:
+      logger.info( "User: " + logmessage )
 
   #save seed and inform about using checkpoint
-  logger.info( "Using seed: {0}".format( seed ) )
-  if checkpoint:
+  if logger:
+    logger.info( "Using seed: {0}".format( seed ) )
+  if checkpoint and logger:
     logger.info( "Using {} as a checkpoint, using seed above for next runs may not matter."\
                   .format( checkpoint ) )
 
@@ -86,17 +88,21 @@ if __name__ == "__main__":
     px["dump_period"] = 10 #if batch size is bigger, it will be used as a dump_period instead
     px["random_init"] = 0.7
 
-    logger.info("Creating new Map Elites instance")
+    if logger:
+      logger.info("Creating new Map Elites instance")
     ME = cvt_map_elites.mapelites( simulation, n_niches=25,
                                    max_evals=500, params=px,
                                    exp_folder=dirs["mapelites"] + "/",
                                    sim_log_name=dirs["experiment"] + "/" + logfile )
 
   else:
-    logger.info("Loading cached Map Elites instance")
+    if logger:
+      logger.info("Loading cached Map Elites instance")
     ME, last_run = use_checkpoint( exp_folder, checkpoint )
-    logger.info("Using cached Map Elites instance")
+    if logger:
+      logger.info("Using cached Map Elites instance")
 
   #run map elites
-  logger.info("Running Map Elites now")
+  if logger:
+    logger.info("Running Map Elites now")
   ME.compute( log_file=open(dirs["mapelites"] + "/cvt.dat", 'a' ) )

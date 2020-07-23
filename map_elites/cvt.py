@@ -192,13 +192,13 @@ class mapelites( object ):
                 if sim_log:
                     sim_log.info("Creating checkpoint pickled_{:08d}.p".format( self.n_evals ) )
                 #TODO THIS IS VERY BAD HELP...
-                #switching to None has to be here beacuse of google colab's python version
-                self.sim_mngr.logging = None
-                self.sim_mngr.fit_object.log = None
+                #switching to None has to be here beacuse of google colab's python version and pickling
+                self.sim_mngr.logger = None
+                self.sim_mngr.fit_object.logger = None
                 with open( self.exp_folder + "pickled_{:08d}.p".format( self.n_evals ), "wb" ) as filelog:
                   pickle.dump( self, filelog ) 
-                self.sim_mngr.logging = sim_mngr_log
-                self.sim_mngr.fit_object.log = fit_log
+                self.sim_mngr.logger = sim_mngr_log
+                self.sim_mngr.fit_object.logger = fit_log
 
             # write log
             if log_file != None:
