@@ -21,20 +21,13 @@ class SimulationManager( object ):
     self.fit_object = fit_object #fitness object defined by user needs
     self.vxa = vxa
     self.vxd = vxd
-    self.logging = logging.getLogger( __name__ ) if log else None #input log will be used as a file name
+    self.log_name = log
     self.sim_run = 0
     self.mult_arr = mult_arr #multiplicative constants for mat properties
     self.par_cnt = self.mult_arr.shape[0] // self.material_cnt #number of parameters for materials
     self.mut_rad = 0.1
 
     self.check() #do some assert checks
-
-    #add formatted stream and file handler to logger
-    if self.logging:
-      f,s = fsh( log )
-      self.logging.addHandler( f )
-      self.logging.addHandler( s )
-      self.logging.setLevel( logging.DEBUG )
 
   def check( self ):
     assert os.path.exists("./voxcraft-sim") and os.path.exists("./vx3_node_worker"), "voxcraft-sim or vx3_node_worker do not exist in the current folder_bot"
@@ -156,6 +149,23 @@ class SimulationManager( object ):
     @output: feature space size
     """
     return self.material_cnt * self.par_cnt
+
+  def init_logger( self ):
+    """
+    Initiate logger instance. It gets lost when using pickling. This needs to be
+    called from outside.
+    """
+
+    self.fit_object.init_logger()
+
+    self.logging = logging.getLogger( __name__ ) if self.log_name else None #input log will be used as a file name
+
+    #add formatted stream and file handler to logger
+    if self.logging:
+      f,s = fsh( self.log_name )
+      self.logging.addHandler( f )
+      self.logging.addHandler( s )
+      self.logging.setLevel( logging.DEBUG )
 
 if __name__ == "__main__":
   mgr = SimulationManager( 2, "./demo" )
