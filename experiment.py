@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 
-from evosorocore2.Simulator import default_sim
-from evosorocore2.Environment import default_env
 from Utils.fitness import Distance
 from Utils.VXA import VXA
 from Utils.tools import create_folders,file_stream_handler,use_checkpoint
 from Simulation_Manager import SimulationManager as SM
 import map_elites.cvt as cvt_map_elites
-import map_elites.common as cm_map_elites
 import numpy as np
 import random
 import time
 import logging
 import argparse
+import shutil
+from glob import glob
+from config import * #import all variables from config
 
 if __name__ == "__main__":
 
@@ -26,21 +26,19 @@ if __name__ == "__main__":
   checkpoint = str( args.checkpoint ) if args.checkpoint else None 
   logmessage = args.message
 
+  #create new seed and set it to randoms
   seed = int( time.time() )
-  
   random.seed( seed )
   np.random.seed( seed )
 
-  number_of_materials = 3
-  mult_arr = np.array( [ 1e6, 5, 1, 1e6, 0.1,
-                         1e7, 5, 1, 1e6, 0,
-                         1e6, 5, 1, 1e6, -0.1 ] )
-  exp_folder = "./experiment_data"
-  robot_folder = "./demo"
-  logfile = "simulation.log"
-
   #create experiment folders
   dirs = create_folders( exp_folder, checkpoint )
+
+  #copy bot and config file to expfolder
+  shutil.copy( "./config.py", dirs["experiment"] )
+  vxdfiles = glob( robot_folder + "/*.vxd" )
+  for f in vxdfiles:
+    shutil.copy( f, dirs["experiment"] )
 
   #create logger
   logger = logging.getLogger( __name__ ) if logfile else None
@@ -63,35 +61,16 @@ if __name__ == "__main__":
   #create map elites instance (or use cached one)
   if checkpoint is None:
 
-    #TODO create config file for this
-    #simulator and environment parameters
-    sim = default_sim.copy()
-    sim["DtFrac"] = 0.5
-    sim["RecordStepSize"] = 100
-    sim["StopConditionFormula"] = 3
-    env = default_env.copy()
-    env["TempEnabled"] = True
-    env["VaryTempEnabled"] = True
-    env["TempAmplitude"] = 5 #14.4714
-    env["TempPeriod"] = 0.2
     vxa = VXA( sim, env )
 
     dist_fit = Distance( dirs["simulator"], dirs["experiment"] + "/" + logfile ) #fitness function based on distance
     simulation = SM( number_of_materials, dist_fit, robot_folder, dirs["experiment"],\
                      mult_arr, vxa, log=dirs["experiment"] + "/" + logfile )
 
-    #map elites parameters
-    px = cm_map_elites.default_params.copy()
-    px["parallel"] = False #voxcraft-sim may allocate quite a bit of memory for one simulation
-    px["batch_size"] = 20
-    px["random_init_batch"] = 20
-    px["dump_period"] = 10 #if batch size is bigger, it will be used as a dump_period instead
-    px["random_init"] = 0.7
-
     if logger:
       logger.info("Creating new Map Elites instance")
-    ME = cvt_map_elites.mapelites( simulation, n_niches=25,
-                                   max_evals=500, params=px,
+    ME = cvt_map_elites.mapelites( simulation, n_niches=n_niches,
+                                   max_evals=max_evals, params=px,
                                    exp_folder=dirs["mapelites"] + "/",
                                    sim_log_name=dirs["experiment"] + "/" + logfile )
 
