@@ -3,6 +3,10 @@
 import argparse
 
 def find_sim_in_log( sim_log, fitness ):
+  """
+  @input: sim log location, fitness of experiment
+  @output if found, output which sim_run is matched
+  """
   
   sim_cnt = -1
 
@@ -10,13 +14,17 @@ def find_sim_in_log( sim_log, fitness ):
     for line in sim_f:
       if line.count('Running simulation') > 0:
         sim_cnt += 1
-      elif line.count( fitness[0:12] ) > 0:
+      #fitness may be too long, we need to cut it
+      elif line.count( fitness[0:12] ) > 0: 
         return sim_cnt
 
   return -1
 
 def match_simulations( archive_name, exp_folder ):
-
+  """
+  @input: archive name, experiment folder location (absolute or relative)
+  @output: list of sim run ids that match archive
+  """
   #this is how sim folders/logs are usually defined  
   MEdata = exp_folder + "/MEdata/" + archive_name
   sim_log = exp_folder + "/simulation.log"
@@ -42,6 +50,5 @@ if __name__ == "__main__":
   archive = args.archive
   exp_folder = args.experiment
  
-  #m = match_simulations( "archive_500.dat", "../experiment_data/200727182610" )
   m = match_simulations( archive, exp_folder )
   print( "{} matches:\n{}".format( archive, m ) ) 
