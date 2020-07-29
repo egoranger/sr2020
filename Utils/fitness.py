@@ -63,7 +63,7 @@ class Distance( object ):
         self.logger.error("Fitness is NaN! Returning 0 instead.")
       return self.fitness_fake()
 
-    return 100*avg, 100*np.array( [ np.average( vectors[:,:1] ), np.average( vectors[:,1:2] ) ] )
+    return avg, np.array( [ np.average( vectors[:,:1] ), np.average( vectors[:,1:2] ) ] )
 
   def fitness_fake( self ):
     """
