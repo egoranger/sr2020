@@ -26,6 +26,8 @@ class SimulationManager( object ):
     self.mult_arr = mult_arr #multiplicative constants for mat properties
     self.par_cnt = self.mult_arr.shape[0] // self.material_cnt #number of parameters for materials
     self.mut_rad = 0.1
+    self.scale = 1
+    self.sim_scale = 1000 #convert numbers to mm
 
     self.check() #do some assert checks
 
@@ -131,12 +133,16 @@ class SimulationManager( object ):
     self.run_simulator()
 
     fit, desc = self.fit_object.fitness( self.sim_run )
+    #scale
+    fit_s = self.scale * fit
+    desc_s = self.scale * desc
 
     if self.logger:
-      self.logger.info( "Fitness for current experiment #{0} was: {1} and descriptor was: {2}".format( self.sim_run, fit, desc ) )
+      self.logger.info( "Fitness for current experiment #{0} was: {1} and descriptor was: {2}".format( self.sim_run, fit_s, desc_s ) )
+      self.logger.info( "Distance covered: {0} mm.".format( desc * self.sim_scale ) )
 
     self.sim_run += 1
-    return fit, desc 
+    return fit_s, desc_s
 
   def get_desc_size( self ):
     """
@@ -166,6 +172,37 @@ class SimulationManager( object ):
       logger.setLevel( logging.DEBUG )
 
     return logger
+
+  def calibrate( self, run_times ):
+    """
+    @input: number of calibration runs
+    @output: scalar for experiment
+    Try to find a scalar to create a constraint for current experiment.
+    """
+
+    self.logger = self.init_logger() #get logger
+    self.sim_run = -run_times
+    max_desc = np.array( [-1.]*self.get_desc_size() )
+    
+    for i in range( run_times ):
+      if self.logger:
+        self.logger.info("Running calibration #{}".format( i ) )
+      mat_arr = np.random.random( len( self.mult_arr ) )
+      fit, desc = self.fitness( mat_arr )
+      for j in range( len( desc ) ):
+        max_desc[j] = max( np.fabs( desc[j] ), max_desc[j] )
+
+    maximum = np.max( max_desc )
+    self.scale = 1 / ( maximum * 2 ) #make current maximum 50% of global maximum
+
+    if self.logger:
+      self.logger.info("Fitness and descriptors are going to be scaled by {}.".format( self.scale ) )
+      for h in self.logger.handlers[:]: #destroy handlers
+        self.logger.removeHandler( h )
+
+    self.logger = None #throw away created logger
+
+    return self.scale
 
 
 if __name__ == "__main__":

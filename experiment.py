@@ -66,6 +66,7 @@ if __name__ == "__main__":
     dist_fit = Distance( dirs["simulator"], dirs["experiment"] + "/" + logfile ) #fitness function based on distance
     simulation = SM( number_of_materials, dist_fit, robot_folder, dirs["experiment"],\
                      mult_arr, vxa, log=dirs["experiment"] + "/" + logfile )
+    simulation.calibrate( calibration_runs )
 
     if logger:
       logger.info("Creating new Map Elites instance")

@@ -15,6 +15,9 @@ exp_folder = "./experiment_data"
 robot_folder = "./demo"
 logfile = "simulation.log"
 
+#number of calibration runs
+calibration_runs = 15
+
 #sim config
 sim = default_sim.copy()
 sim["DtFrac"] = 0.5
