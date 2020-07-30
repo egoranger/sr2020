@@ -12,7 +12,7 @@ import logging
 import argparse
 import shutil
 from glob import glob
-from config import * #import all variables from config
+from rieffel_config import * #import all variables from config
 
 if __name__ == "__main__":
 
@@ -35,7 +35,7 @@ if __name__ == "__main__":
   dirs = create_folders( exp_folder, checkpoint )
 
   #copy bot and config file to expfolder
-  shutil.copy( "./config.py", dirs["experiment"] )
+  shutil.copy( "./rieffel_config.py", dirs["experiment"] )
   vxdfiles = glob( robot_folder + "/*.vxd" )
   for f in vxdfiles:
     shutil.copy( f, dirs["experiment"] )
@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     dist_fit = Distance( dirs["simulator"], dirs["experiment"] + "/" + logfile ) #fitness function based on distance
     simulation = SM( number_of_materials, dist_fit, robot_folder, dirs["experiment"],\
-                     mult_arr, vxa, log=dirs["experiment"] + "/" + logfile )
+                    materials_config , vxa, log=dirs["experiment"] + "/" + logfile )
     simulation.calibrate( calibration_runs )
 
     if logger:

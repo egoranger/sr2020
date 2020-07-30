@@ -13,7 +13,7 @@ import logging
 class SimulationManager( object ):
 
   def __init__( self, material_cnt, fit_object, folder_bot, folder_exp_data,
-                mult_arr, vxa=VXA(), vxd=VXD(), log=None ):
+                materials_config, vxa=VXA(), vxd=VXD(), log=None ):
     self.material_cnt = material_cnt
     self.materials = [] #materials need to be created during simulation process 
     self.folder_bot = folder_bot #folder where .vxa/.vxd files are stored
@@ -23,8 +23,9 @@ class SimulationManager( object ):
     self.vxd = vxd
     self.log_name = log
     self.sim_run = 0
-    self.mult_arr = mult_arr #multiplicative constants for mat properties
-    self.par_cnt = self.mult_arr.shape[0] // self.material_cnt #number of parameters for materials
+    self.materials_config= materials_config#multiplicative constants for mat properties
+    #JR - is par_cnt PER MATERIAL?
+    self.par_cnt = len(self.materials_config) #number of parameters for materials
     self.mut_rad = 0.1
     self.scale = 1
     self.sim_scale = 1000 #convert numbers to mm
@@ -33,9 +34,9 @@ class SimulationManager( object ):
 
   def check( self ):
     assert os.path.exists("./voxcraft-sim") and os.path.exists("./vx3_node_worker"), "voxcraft-sim or vx3_node_worker do not exist in the current folder_bot"
-    assert self.material_cnt * self.par_cnt == len( self.mult_arr ), "Multiplicative array size seems to be wrong!"
+    #assert self.material_cnt * self.par_cnt == len( self.mult_arr ), "Multiplicative array size seems to be wrong!"
     assert os.path.exists( self.folder_bot ) and os.path.exists( self.folder_exp_data ), "Folder for experiments or bot folder does not exist!"
-    assert self.mult_arr.shape[0] % self.material_cnt == 0, "Check mult_arr or material count, current number of parameters given by them is {}".format( self.par_cnt )
+    #assert self.mult_arr.shape[0] % self.material_cnt == 0, "Check mult_arr or material count, current number of parameters given by them is {}".format( self.par_cnt )
 
   def create_materials( self, mat_list ):
     """
@@ -50,7 +51,7 @@ class SimulationManager( object ):
     for m in mat_list:
       self.materials.append( Material( m ) )
 
-  def convert_materials( self, mat_arr ):
+  def convert_materials( self, mapelites_vals ):
     """
     @input: mat_arr (np.array) - the input from MAP-Elites
     @output: list of numpy arrays
@@ -58,33 +59,51 @@ class SimulationManager( object ):
     Each array needs to be fixed by some constant. This is defined by self.mult_arr.
     """
     c = self.par_cnt
-    assert len( mat_arr.shape ) == 1, "Wrong shape of an array with materials"
-    assert mat_arr.shape[0] % c == 0, "Wrong number of parameters, cannot construct list of materials"
+   # assert len( mat_arr.shape ) == 1, "Wrong shape of an array with materials"
+   # assert mat_arr.shape[0] % c == 0, "Wrong number of parameters, cannot construct list of materials"
     
     mats = []
 
     #JR
     #only want max swing of mat values to be ~10%
-    mutation_radius = self.mult_arr * self.mut_rad
+    #mutation_radius = self.mult_arr * self.mut_rad
     #change [0..1] to [-1..1]
-    fullrange = mat_arr * 2 - 1
+
+    #print('convert:mevals',mapelites_vals)
+    #print('convert:mcount',self.material_cnt)
+    mapelites_vals = mapelites_vals * 2 - 1
     #amount to changeby
-    amount_change = fullrange * mutation_radius  
+    #amount_change = fullrange * mutation_radius  
     #new values
-    mat_arr = self.mult_arr + amount_change
+    #mat_arr = self.mult_arr + amount_change
+
+    #mutation_radius = 0.1
 
     for i in range( self.material_cnt ):
-      extract = mat_arr[ i*c : c + i*c ]
+      extract = mapelites_vals[ i*c : c + i*c ]
+      #print("extratc:",extract)
       new_mat = default_mat.copy()
       new_mat["id"] = i + 1
       new_mat["Name"] = "Material " + str( i )
       new_mat["color"] = tuple( np.random.random( 3 ) ) + ( 1, )
-      new_mat["Elastic_Mod"] = extract[0]
-      new_mat["uStatic"] = extract[1]
-      new_mat["uDynamic"] = extract[2]
-      new_mat["Density"] = extract[3]
-      new_mat["CTE"] = extract[4]
-
+      new_mat["uStatic"] = 1
+      new_mat["CTE"] = 0.1 
+      new_mat["MaterialTempPhase"] =  1
+      new_mat['Density'] = 1000000
+      new_mat['Elastic_Mod'] = 1000000
+      new_mat['Poissons_Ratio'] = 0.35
+      new_mat['uDynamic'] =  1
+      for index,pair in enumerate(self.materials_config):
+        key,rad = pair
+        curval = new_mat[key]
+        #if we only want to change by a certain radius
+        if rad == 'rad':
+          change_amount = curval*self.mut_rad*extract[index]
+          newval = curval + change_amount
+        #if we want to just change the value between -1 and 1
+        else:
+          newval = extract[index]
+        new_mat[key] = newval 
       mats.append( new_mat )
 
     return mats
@@ -187,7 +206,7 @@ class SimulationManager( object ):
     for i in range( run_times ):
       if self.logger:
         self.logger.info("Running calibration #{}".format( i ) )
-      mat_arr = np.random.random( len( self.mult_arr ) )
+      mat_arr = np.random.random( self.par_cnt*self.material_cnt )
       fit, desc = self.fitness( mat_arr )
       for j in range( len( desc ) ):
         max_desc[j] = max( np.fabs( desc[j] ), max_desc[j] )
