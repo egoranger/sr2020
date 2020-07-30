@@ -5,6 +5,7 @@ import numpy
 import os
 import subprocess as sub
 import shutil
+import re
 
 def find_sim_in_log( sim_log, fitness ):
   """
@@ -20,7 +21,8 @@ def find_sim_in_log( sim_log, fitness ):
         sim_cnt += 1
       #fitness may be too long, we need to cut it
       elif line.count( fitness[0:12] ) > 0: 
-        return sim_cnt
+        m = re.match( ".*#(\d+).*", line )
+        return int( m.groups()[0] )
 
   return -1
 
