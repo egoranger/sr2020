@@ -12,6 +12,7 @@ import logging
 import argparse
 import shutil
 from glob import glob
+import os
 from rieffel_config import * #import all variables from config
 
 if __name__ == "__main__":
@@ -36,6 +37,11 @@ if __name__ == "__main__":
 
   #copy bot and config file to expfolder
   shutil.copy( "./rieffel_config.py", dirs["experiment"] )
+  #create simlink to latest data
+  os.symlink(dirs["experiment"],'./latest-data')
+
+
+
   vxdfiles = glob( robot_folder + "/*.vxd" )
   for f in vxdfiles:
     shutil.copy( f, dirs["experiment"] )

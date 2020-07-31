@@ -74,6 +74,7 @@ class Material(object):
         self.CTE = parameters["CTE"]
         self.uStatic = parameters["uStatic"]
         self.uDynamic = parameters["uDynamic"]
+        self.MaterialTempPhase = parameters["MaterialTempPhase"]
 
     def write_to_xml( self, root ):
         
@@ -104,6 +105,7 @@ class Material(object):
         etree.SubElement( mechanical, "CTE" ).text = str( self.CTE )
         etree.SubElement( mechanical, "uStatic" ).text = str( self.uStatic )
         etree.SubElement( mechanical, "uDynamic" ).text = str( self.uDynamic )
+        etree.SubElement( mechanical, "MaterialTempPhase" ).text = str( self.MaterialTempPhase)
 
         return material_root
 
