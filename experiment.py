@@ -13,6 +13,7 @@ import argparse
 import shutil
 from glob import glob
 import os
+import errno
 from rieffel_config import * #import all variables from config
 
 if __name__ == "__main__":
@@ -38,8 +39,14 @@ if __name__ == "__main__":
   #copy bot and config file to expfolder
   shutil.copy( "./rieffel_config.py", dirs["experiment"] )
   #create simlink to latest data
-  os.symlink(dirs["experiment"],'./latest-data')
-
+  try:
+    os.symlink(dirs["experiment"],'./latest-data')
+  except OSError as e:
+        if e.errno == errno.EEXIST:
+          os.remove('./latest-data')
+          os.symlink(dirs["experiment"],'./latest-data')
+        else:
+            raise e 
 
 
   vxdfiles = glob( robot_folder + "/*.vxd" )
