@@ -9,41 +9,41 @@ default_mat = \
         #material color, rgba
         "color" : (1,0,1,1),
         #True if we want voxels of this mat. to be target, else False
-        "isTarget" : False,
+        "isTarget" : None, #False
         #True if we want to measure voxels made by this mat. in all MathTree fcs(), else False
-        "isMeasured" : True,
+        "isMeasured" : None, #True
         #True if we don't want this material to move at all, else False
-        "Fixed" : False,
+        "Fixed" : None, #False
         #True if we want attachment happen to this mat., else False
-        "Sticky" : False,
+        "Sticky" : None, #False
         #real number, 0 if we don't want cilia to happen
-        "Cilia" : 0,
+        "Cilia" : None, #0
         #True if this mat. can generate periodic signals, else False
-        "isPaceMaker" : False,
+        "isPaceMaker" : None, #False
         #real number, period between two signal
-        "PaceMakerPeriod" : 0,
+        "PaceMakerPeriod" : None, #0
         #0.0 ~ 1.0, decay ratio of signal propagation in other parts of the body
-        "signalValueDecay" : 0.9,
+        "signalValueDecay" : None, #0.9
         #real number/sec delay of signal at every stop
-        "signalTimeDelay" : 0.03,
+        "signalTimeDelay" : None, #0.03
         #real number how long does voxel stay inactive after sending signal
-        "inactivePeriod" : 0.03,
+        "inactivePeriod" : None, #0.03
         #False simple elastic model, True for perfectly elastic mat.
-        "MatModel" : False,
+        "MatModel" : None, #False
         #real number in Pascal, Young's Modulus
-        "Elastic_Mod" : 0,
+        "Elastic_Mod" : None, #0
         #real number in Pascal, if stress > threshold -> mat. will fail by fracture
-        "Fail_Stress" : 0,
+        "Fail_Stress" : None, #0
         #real number in kg/m^3, e.g. rubber's density 1.5e+3 kg/m^3
-        "Density" : 0,
+        "Density" : None, #0
         #0.0 ~ 0.5
-        "Poissons_Ratio" : 0,
+        "Poissons_Ratio" : None, #0
         #small real number in 1/degree Celsius
-        "CTE" : 0,
+        "CTE" : None, #0
         #0.0 ~ 5.0, static frictional coefficient
-        "uStatic" : 0,
+        "uStatic" : None, #0
         #0.0 ~ 1.0, kinetic frictional coefficient
-        "uDynamic" : 0,
+        "uDynamic" : None #0
     }
 
 class Material(object):
@@ -56,17 +56,17 @@ class Material(object):
         self.id = parameters["id"]
         self.Name = parameters["Name"]
         self.color = parameters["color"]
-        self.isTarget = 1 if parameters["isTarget"] else 0
-        self.isMeasured = 1 if parameters["isMeasured"] else 0
-        self.Fixed = 1 if parameters["Fixed"] else 0
-        self.Sticky = 1 if parameters["Sticky"] else 0
+        self.isTarget = parameters["isTarget"]
+        self.isMeasured = parameters["isMeasured"]
+        self.Fixed = parameters["Fixed"]
+        self.Sticky = parameters["Sticky"]
         self.Cilia = parameters["Cilia"]
         self.isPaceMaker = parameters["isPaceMaker"]
         self.PaceMakerPeriod = parameters["PaceMakerPeriod"]
         self.signalValueDecay = parameters["signalValueDecay"]
         self.signalTimeDelay = parameters["signalTimeDelay"]
         self.inactivePeriod = parameters["inactivePeriod"]
-        self.MatModel = 1 if parameters["MatModel"] else 0
+        self.MatModel = parameters["MatModel"]
         self.Elastic_Mod = parameters["Elastic_Mod"]
         self.Fail_Stress = parameters["Fail_Stress"]
         self.Density = parameters["Density"]
@@ -87,23 +87,41 @@ class Material(object):
         etree.SubElement( display, "Alpha" ).text = str( self.color[3] )
 
         mechanical = etree.SubElement( material_root, "Mechanical" )
-        #etree.SubElement( mechanical, "isTarget" ).text = str( self.isTarget )
-        etree.SubElement( mechanical, "isMeasured" ).text = str( self.isMeasured )
-        etree.SubElement( mechanical, "Fixed" ).text = str( self.Fixed )
-        #etree.SubElement( mechanical, "Sticky" ).text = str( self.Sticky )
-        #etree.SubElement( mechanical, "Cilia" ).text = str( self.isPaceMaker )
-        #etree.SubElement( mechanical, "PaceMakerPeriod" ).text = str( self.PaceMakerPeriod )
-        #etree.SubElement( mechanical, "signalValueDecay" ).text = str( self.signalValueDecay )
-        #etree.SubElement( mechanical, "signalTimeDelay" ).text = str( self.signalTimeDelay )
-        #etree.SubElement( mechanical, "inactivePeriod" ).text = str( self.inactivePeriod )
-        #etree.SubElement( mechanical, "MatModel" ).text = str( self.MatModel )
-        etree.SubElement( mechanical, "Elastic_Mod" ).text = str( self.Elastic_Mod )
-        #etree.SubElement( mechanical, "Fail_Stress" ).text = str( self.Fail_Stress )
-        etree.SubElement( mechanical, "Density" ).text = str( self.Density )
-        etree.SubElement( mechanical, "Poissons_Ratio" ).text = str( self.Poissons_Ratio )
-        etree.SubElement( mechanical, "CTE" ).text = str( self.CTE )
-        etree.SubElement( mechanical, "uStatic" ).text = str( self.uStatic )
-        etree.SubElement( mechanical, "uDynamic" ).text = str( self.uDynamic )
+        #TODO too many ifs... can we reduce this somehow? (perhaps some loop?)
+        if self.isTarget is not None:
+          etree.SubElement( mechanical, "isTarget" ).text = str( self.isTarget )
+        if self.isMeasured is not None:
+          etree.SubElement( mechanical, "isMeasured" ).text = str( self.isMeasured )
+        if self.Fixed is not None:
+          etree.SubElement( mechanical, "Fixed" ).text = str( self.Fixed )
+        if self.Sticky is not None:
+          etree.SubElement( mechanical, "Sticky" ).text = str( self.Sticky )
+        if self.isPaceMaker is not None:
+          etree.SubElement( mechanical, "Cilia" ).text = str( self.isPaceMaker )
+        if self.PaceMakerPeriod is not None:
+          etree.SubElement( mechanical, "PaceMakerPeriod" ).text = str( self.PaceMakerPeriod )
+        if self.signalValueDecay is not None:
+          etree.SubElement( mechanical, "signalValueDecay" ).text = str( self.signalValueDecay )
+        if self.signalTimeDelay is not None:
+          etree.SubElement( mechanical, "signalTimeDelay" ).text = str( self.signalTimeDelay )
+        if self.inactivePeriod is not None:
+          etree.SubElement( mechanical, "inactivePeriod" ).text = str( self.inactivePeriod )
+        if self.MatModel is not None:
+          etree.SubElement( mechanical, "MatModel" ).text = str( self.MatModel )
+        if self.Elastic_Mod is not None:
+          etree.SubElement( mechanical, "Elastic_Mod" ).text = str( self.Elastic_Mod )
+        if self.Fail_Stress is not None:
+          etree.SubElement( mechanical, "Fail_Stress" ).text = str( self.Fail_Stress )
+        if self.Density is not None:
+          etree.SubElement( mechanical, "Density" ).text = str( self.Density )
+        if self.Poissons_Ratio is not None:
+          etree.SubElement( mechanical, "Poissons_Ratio" ).text = str( self.Poissons_Ratio )
+        if self.CTE is not None:
+          etree.SubElement( mechanical, "CTE" ).text = str( self.CTE )
+        if self.uStatic is not None:
+          etree.SubElement( mechanical, "uStatic" ).text = str( self.uStatic )
+        if self.uDynamic is not None:
+          etree.SubElement( mechanical, "uDynamic" ).text = str( self.uDynamic )
 
         return material_root
 

@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 import numpy as np
-from evosorocore2.Simulator import default_sim
-from evosorocore2.Environment import default_env
+from sim_config import simconfig,envconfig
 import map_elites.common as cm_map_elites
 
 number_of_materials = 3
@@ -17,19 +16,6 @@ logfile = "simulation.log"
 
 #number of calibration runs
 calibration_runs = 15
-
-#sim config
-sim = default_sim.copy()
-sim["DtFrac"] = 0.5
-sim["RecordStepSize"] = 100
-sim["StopConditionFormula"] = 3
-
-#env config
-env = default_env.copy()
-env["TempEnabled"] = True
-env["VaryTempEnabled"] = True
-env["TempAmplitude"] = 5 #14.4714
-env["TempPeriod"] = 0.2
 
 #map elites parameters
 px = cm_map_elites.default_params.copy()

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+from Utils.tools import write_to_xml
 from evosorocore2.Material import Material as Mat
-from evosorocore2.Simulator import Sim,default_sim
-from evosorocore2.Environment import Env,default_env,VXC_Wrapper
+from evosorocore2.Environment import VXC_Wrapper
+from sim_config import simconfig,envconfig
 from lxml import etree
 
 class VXA( object ):
@@ -12,19 +13,21 @@ class VXA( object ):
   VXA object does not contain Material details.
   """
 
-  def __init__( self, sim_params=default_sim.copy(), env_params=default_env.copy() ):
-    self.sim = Sim( sim_params )
-    self.env = Env( env_params )
+  #def __init__( self, sim_params=default_sim.copy(), env_params=default_env.copy() ):
+  def __init__( self, sim_params=simconfig.copy(), env_params=envconfig.copy() ):
+    self.sim = sim_params
+    self.env = env_params
     self.vxc = VXC_Wrapper()
 
   def write_to_xml( self, path="./base.vxa", materials=[] ):
     """
     Write data to the file specified by the path.
     """
+
     root = etree.Element( "VXA", Version="1.1" )
 
-    self.sim.write_to_xml( root )
-    self.env.write_to_xml( root )
+    write_to_xml( root, self.sim )
+    write_to_xml( root, self.env )
     self.vxc.write_to_xml( root, materials )
 
     with open( path, "w" ) as f:
