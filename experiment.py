@@ -61,7 +61,7 @@ if __name__ == "__main__":
   #create map elites instance (or use cached one)
   if checkpoint is None:
 
-    vxa = VXA( sim, env )
+    vxa = VXA( simconfig, envconfig )
 
     dist_fit = Distance( dirs["simulator"], dirs["experiment"] + "/" + logfile ) #fitness function based on distance
     simulation = SM( number_of_materials, dist_fit, robot_folder, dirs["experiment"],\
