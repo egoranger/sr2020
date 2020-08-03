@@ -13,7 +13,7 @@ import logging
 class SimulationManager( object ):
 
   def __init__( self, material_cnt, fit_object, folder_bot, folder_exp_data,
-                mult_arr, vxa=VXA(), vxd=VXD(), log=None ):
+                mult_arr, shift_arr, ME_arr, vxa=VXA(), vxd=VXD(), log=None ):
     self.material_cnt = material_cnt
     self.materials = [] #materials need to be created during simulation process 
     self.folder_bot = folder_bot #folder where .vxa/.vxd files are stored
@@ -24,6 +24,8 @@ class SimulationManager( object ):
     self.log_name = log
     self.sim_run = 0
     self.mult_arr = mult_arr #multiplicative constants for mat properties
+    self.shift_arr = shift_arr
+    self.ME_arr = ME_arr
     self.par_cnt = self.mult_arr.shape[0] // self.material_cnt #number of parameters for materials
     self.mut_rad = 0.1
     self.scale = 1
@@ -36,6 +38,8 @@ class SimulationManager( object ):
     assert self.material_cnt * self.par_cnt == len( self.mult_arr ), "Multiplicative array size seems to be wrong!"
     assert os.path.exists( self.folder_bot ) and os.path.exists( self.folder_exp_data ), "Folder for experiments or bot folder does not exist!"
     assert self.mult_arr.shape[0] % self.material_cnt == 0, "Check mult_arr or material count, current number of parameters given by them is {}".format( self.par_cnt )
+    assert self.shift_arr.shape[0] % self.material_cnt == 0, "Check shift_arr"
+    assert self.ME_arr.shape[0] % self.material_cnt == 0, "Check ME_arr"
 
   def create_materials( self, mat_list ):
     """
@@ -71,19 +75,23 @@ class SimulationManager( object ):
     #amount to changeby
     amount_change = fullrange * mutation_radius  
     #new values
-    mat_arr = self.mult_arr + amount_change
+    mat_arr = self.mult_arr + self.shift_arr + amount_change
 
     for i in range( self.material_cnt ):
+      #extract info
       extract = mat_arr[ i*c : c + i*c ]
+      me_mask = self.ME_arr[ i*c : c + i*c ]
+      me_arr = mat_arr[ i*c : c + i*c ]
+      #create material
       new_mat = default_mat.copy()
       new_mat["id"] = i + 1
-      new_mat["Name"] = "Material " + str( i )
+      new_mat["Name"] = "Material " + str( i + 1 )
       new_mat["color"] = tuple( np.random.random( 3 ) ) + ( 1, )
-      new_mat["Elastic_Mod"] = extract[0]
-      new_mat["uStatic"] = extract[1]
-      new_mat["uDynamic"] = extract[2]
-      new_mat["Density"] = extract[3]
-      new_mat["CTE"] = extract[4]
+      new_mat["Elastic_Mod"] = extract[0] if me_mask[0] == False else me_arr[0]
+      new_mat["uStatic"] = extract[1] if me_mask[1] == False else me_arr[1]
+      new_mat["uDynamic"] = extract[2] if me_mask[2] == False else me_arr[2]
+      new_mat["Density"] = extract[3] if me_mask[3] == False else me_arr[3]
+      new_mat["CTE"] = extract[4] if me_mask[4] == False else me_arr[4]
 
       mats.append( new_mat )
 

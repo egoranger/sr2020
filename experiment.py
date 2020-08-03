@@ -54,6 +54,9 @@ if __name__ == "__main__":
   #save seed and inform about using checkpoint
   if logger:
     logger.info( "Using seed: {0}".format( seed ) )
+    logger.info( "mult_arr: {}".format( mult_arr ) )
+    logger.info( "shift_arr: {}".format( shift_arr ) )
+    logger.info( "ME_arr: {}".format( ME_arr ) )
   if checkpoint and logger:
     logger.info( "Using {} as a checkpoint, using seed above for next runs may not matter."\
                   .format( checkpoint ) )
@@ -65,7 +68,8 @@ if __name__ == "__main__":
 
     dist_fit = Distance( dirs["simulator"], dirs["experiment"] + "/" + logfile ) #fitness function based on distance
     simulation = SM( number_of_materials, dist_fit, robot_folder, dirs["experiment"],\
-                     mult_arr, vxa, log=dirs["experiment"] + "/" + logfile )
+                     mult_arr, shift_arr, ME_arr, vxa,
+                     log=dirs["experiment"] + "/" + logfile )
     simulation.calibrate( calibration_runs )
 
     if logger:
