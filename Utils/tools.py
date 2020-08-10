@@ -107,6 +107,49 @@ def write_to_xml( root, d ):
 
   return root
 
+def parse_history_file( num ):
+  """
+  @input: id of sim_run (eg. sim_run3.history, where id is 3)
+  @output: 3d numpy array, in 3rd dimension you'll find:
+           posx, posy, posz, angledeg, orix, oriy, oriz, voxsize
+  """
+  brackets = re.compile( '<<<[^<>]*>>>' ) #we will need to get rid of brackets
+  arr = []
+  with open( "sim_run{}.history".format( num ), 'r' ) as f:
+    #history_file = f.read()
+    for line in f:
+      if line.find( "<<<>>>" ) != -1:
+        voxels = brackets.sub( '', line ).split(';') #divide by each voxel
+        points = []
+        for v in voxels:
+          items = v.split(',') #seperate voxel info
+          if len( items ) >= 15: #if enough data info is present
+            items = [ float( i ) if i else None for i in items ]
+            posx, posy, posz = items[0], items[1], items[2]
+            angledeg, orix, oriy, oriz = items[3], items[4], items[5], items[6] 
+            vox_size = ( items[10] - items[7], items[11] - items[8], items[12] - items[9] )
+            points.append( [ posx, posy, posz, angledeg, orix, oriy, oriz ] + list( vox_size ) )
+        arr.append( points )
+
+  return np.array( arr )
+
+def get_angle( num ):
+  """
+  @input: id of sim_run (eg. sim_run3.history, where id is 3)
+  @output: angle of given simulation in radians
+  """
+  arr = parse_history_file( num )
+
+  #suppose first and last element are most furthest
+  v1 = np.array( arr[0][0][0:3] ) - np.array( arr[0][-1][0:3] )
+  v2 = np.array( arr[-1][0][0:3] ) - np.array( arr[-1][-1][0:3] )
+  unit_v1 = v1 / np.linalg.norm( v1 )
+  unit_v2 = v2 / np.linalg.norm( v2 )
+  dot_product = np.dot( unit_v1, unit_v2 )
+  angle = np.arccos( dot_product )
+
+  return angle
+
 if __name__ == "__main__":
   x = create_folders( "test" )
   print( x["mapelites"], x["simulator"], x["experiment"] )

@@ -2,7 +2,7 @@
 
 from Utils.VXA import VXA
 from Utils.VXD import VXD
-from Utils.tools import file_stream_handler as fsh
+from Utils.tools import file_stream_handler as fsh,get_angle
 from evosorocore2.Material import Material,default_mat
 import numpy as np
 import subprocess as sub
