@@ -31,8 +31,8 @@ px["parallel"] = False #voxcraft-sim may allocate quite a bit of memory for one 
 px["batch_size"] = 20
 px["random_init_batch"] = 20
 px["dump_period"] = 10 #if batch size is bigger, it will be used as a dump_period instead
-px["random_init"] = 0.4
+px["random_init"] = 0.2
 
 #compute parameters
-n_niches=25
-max_evals=500
+n_niches=36
+max_evals=10000

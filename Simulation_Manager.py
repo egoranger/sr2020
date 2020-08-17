@@ -142,12 +142,16 @@ class SimulationManager( object ):
 
     fit, desc = self.fit_object.fitness( self.sim_run )
     #scale
-    fit_s = self.scale * fit
-    desc_s = self.scale * desc
+    #TODO perhaps a bit sloppy place to do scaling...
+    fit_s = self.scale * fit + desc[2] #add angle to fitness
+    desc_s = desc.copy()
+    desc_s[:2] *= self.scale #scale x and y descriptors
+    desc_s[2] /= np.pi #scale down angle
 
     if self.logger:
+      degs = np.degrees( desc[2] )
       self.logger.info( "Fitness for current experiment #{0} was: {1} and descriptor was: {2}".format( self.sim_run, fit_s, desc_s ) )
-      self.logger.info( "Distance covered: {0} mm.".format( desc * self.sim_scale ) )
+      self.logger.info( "Distance covered: {0} mm and the rotation was {1} degrees".format( desc[:2] * self.sim_scale, degs ) )
 
     self.sim_run += 1
     return fit_s, desc_s
@@ -200,7 +204,7 @@ class SimulationManager( object ):
       for j in range( len( desc ) ):
         max_desc[j] = max( np.fabs( desc[j] ), max_desc[j] )
 
-    maximum = np.max( max_desc )
+    maximum = np.max( max_desc[:2] )
     self.scale = 1 / ( maximum * 2 ) #make current maximum 50% of global maximum
 
     if self.logger:

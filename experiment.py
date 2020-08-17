@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from Utils.fitness import Distance
+from Utils.fitness import Distance_Angle
 from Utils.VXA import VXA
 from Utils.tools import create_folders,file_stream_handler,use_checkpoint
 from Simulation_Manager import SimulationManager as SM
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 
     vxa = VXA( simconfig, envconfig )
 
-    dist_fit = Distance( dirs["simulator"], dirs["experiment"] + "/" + logfile ) #fitness function based on distance
+    dist_fit = Distance_Angle( dirs["simulator"], dirs["experiment"] + "/" + logfile ) #fitness function based on distance and angle
     simulation = SM( number_of_materials, dist_fit, robot_folder, dirs["experiment"],\
                      mult_arr, shift_arr, ME_arr, vxa,
                      log=dirs["experiment"] + "/" + logfile )

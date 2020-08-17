@@ -107,7 +107,7 @@ def write_to_xml( root, d ):
 
   return root
 
-def parse_history_file( num ):
+def parse_history_file( num, exp_folder ):
   """
   @input: id of sim_run (eg. sim_run3.history, where id is 3)
   @output: 3d numpy array, in 3rd dimension you'll find:
@@ -115,7 +115,7 @@ def parse_history_file( num ):
   """
   brackets = re.compile( '<<<[^<>]*>>>' ) #we will need to get rid of brackets
   arr = []
-  with open( "sim_run{}.history".format( num ), 'r' ) as f:
+  with open( exp_folder + "/sim_run{}.history".format( num ), 'r' ) as f:
     #history_file = f.read()
     for line in f:
       if line.find( "<<<>>>" ) != -1:
@@ -133,12 +133,12 @@ def parse_history_file( num ):
 
   return np.array( arr )
 
-def get_angle( num ):
+def get_angle( num, exp_folder ):
   """
   @input: id of sim_run (eg. sim_run3.history, where id is 3)
   @output: angle of given simulation in radians
   """
-  arr = parse_history_file( num )
+  arr = parse_history_file( num, exp_folder )
 
   #suppose first and last element are most furthest
   v1 = np.array( arr[0][0][0:3] ) - np.array( arr[0][-1][0:3] )

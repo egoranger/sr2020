@@ -53,6 +53,7 @@ from map_elites import common as cm
 
 def add_to_archive(s, centroid, archive, kdt):
     niche_index = kdt.query([centroid], k=1)[1][0][0]
+    print( "Using {} as a centroid, index is {}".format( centroid, niche_index ) )
     niche = kdt.data[niche_index]
     n = cm.make_hashable(niche)
     s.centroid = n
